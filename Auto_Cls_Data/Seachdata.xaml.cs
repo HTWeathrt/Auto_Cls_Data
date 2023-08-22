@@ -181,7 +181,6 @@ namespace Auto_Cls_Data
                 }
                 adb.Close();
             }
-
         }
         private void CGplustableA(string Lane)
         {
