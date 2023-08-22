@@ -1,0 +1,23 @@
+﻿<Window x:Class="Auto_Cls_Data.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Auto_Cls_Data"
+        mc:Ignorable="d"
+        Title="Program Ins_Cls --- NY Inspection Algorithm Technology ( PO Assy/Inspection Team 1)" Height="300" Width="700" Icon="logo/lg_logo_icon_170264.png" Topmost="True">
+    <Grid Margin="-4,0,4,-6">
+        <Button ToolTip="Seachdata,YRT  " Content="Seach__Data" HorizontalAlignment="Left" Height="54" Margin="59,194,0,0" VerticalAlignment="Top" Width="224" BorderBrush="#FFB37E7E" Background="#FF87C8C7" FontSize="20" Click="ld_windown_seachdata"/>
+        <Button ToolTip="Auto loading Data -> Send to Messenger , AlgoTech use" Content="Auto__Data__Ins" HorizontalAlignment="Left" Height="54" Margin="437,194,0,0" VerticalAlignment="Top" Width="224" Background="#FFEABBC6" FontSize="20" Click="ld_windown_auto"/>
+        <Image Margin="4,7,406,181" Source="/Logo/Hehe.png"/>
+        <Grid HorizontalAlignment="Left" Height="34" Margin="433,157,0,0" VerticalAlignment="Top" Width="208">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="73*"/>
+                <ColumnDefinition Width="135*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="Password" HorizontalAlignment="Left" Height="34" VerticalAlignment="Center" Width="59"/>
+            <PasswordBox Grid.ColumnSpan="2" Margin="59,0,0,0" MaxLength="12" x:Name="pw_box" PasswordChar="*" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="16"/>
+
+        </Grid>
+    </Grid>
+</Window>

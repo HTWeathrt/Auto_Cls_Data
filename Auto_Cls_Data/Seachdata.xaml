@@ -1,0 +1,259 @@
+﻿<Window x:Class="Auto_Cls_Data.Seachdata"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Auto_Cls_Data"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        
+        mc:Ignorable="d"
+        Title="Auto.Inspection.Cls (PO Assy/Inspection Team 1)  " Height="1080" Width="1920" ShowActivated="False" ContentStringFormat="yyyy-MM-dd HH:mm:ss" Icon="logo/LogoAuto_cs.ico"  >
+    <Grid Margin="0,0,0,-1" AllowDrop="True" OpacityMask="#FF956A6A" Background="#FF535555">
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Border BorderBrush="White" BorderThickness="1" HorizontalAlignment="Left" Height="1000" Margin="399,10,0,0" VerticalAlignment="Top" Width="1506">
+            <TabControl Margin="9,-1,4,4" Background="#FFA9ADAD">
+                <TabControl.Resources>
+                    <Style TargetType="{x:Type TabItem}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type TabItem}">
+                                    <Border x:Name="Border" BorderThickness="1,1,1,0" BorderBrush="Gainsboro" CornerRadius="4,4,0,0" Margin="2,10,0,3">
+                                        <ContentPresenter x:Name="ContentSite"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        ContentSource="Header"
+                                        Margin="10,2"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="LightSkyBlue" />
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="False">
+                                            <Setter TargetName="Border" Property="Background" Value="GhostWhite" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </TabControl.Resources>
+                <TabItem Header="TotalCal">
+                    <Grid Margin="0,0,1,0" Background="#FF777777" Height="944"  >
+                        <Label Content="Lane A" x:Name="Name_laneA" HorizontalAlignment="Left" Height="34" VerticalAlignment="Top" Width="131" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="16" FontWeight="Bold" Margin="123,-8,0,0" Visibility="Collapsed" />
+                        <Label Content="Lane B" x:Name="Name_laneB" HorizontalAlignment="Left" Height="34" VerticalAlignment="Top" Width="132" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="16" FontWeight="Bold" Margin="548,-8,0,0"  Visibility="Collapsed" />
+                        <DataGrid x:Name="table2" Background="#FF535555" BorderBrush="#1F266F82" ClipboardCopyMode="IncludeHeader" IsReadOnly="True" 
+                                  Margin="0,20,1084,10" HeadersVisibility="All" Foreground="Black" GridLinesVisibility="Horizontal" BorderThickness="1" 
+                                  VerticalGridLinesBrush="Black"  SelectedCellsChanged="table2_SelectedCellsChanged_1" OpacityMask="#FF716767" Width="400" />
+                        <DataGrid x:Name="TableB" Background="#FF535555" BorderBrush="#1F266F82" ClipboardCopyMode="IncludeHeader" IsReadOnly="True" 
+                                  Margin="430,20,654,10" HeadersVisibility="All" Foreground="Black" GridLinesVisibility="Horizontal" BorderThickness="1" 
+                                  VerticalGridLinesBrush="Black"  SelectedCellsChanged="TableB_SelectedCellsChanged_1" OpacityMask="#FF716767" Width="400" Visibility="Collapsed" >
+                        </DataGrid >
+                        <Grid Margin="463,59,684,10" x:Name="tableIDpanel" Visibility="Visible" >
+                            <DataGrid x:Name="tableidpanel" Background="#FF535555" BorderBrush="#1F266F82" ClipboardCopyMode="IncludeHeader" IsReadOnly="True" 
+                                Margin="0,33,0,0" HeadersVisibility="All" Foreground="Black" GridLinesVisibility="Horizontal" BorderThickness="1" 
+                                VerticalGridLinesBrush="Black" OpacityMask="#FF716767"  />
+                            <Label Content="...." x:Name="contentableidpanel" HorizontalAlignment="Center" Height="33" VerticalAlignment="Top" Width="284" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="16" FontWeight="Bold"/>
+
+                        </Grid>
+
+                        <Grid x:Name="Mapping_CGAOI" HorizontalAlignment="Left" Height="886" Margin="854,64,0,0" VerticalAlignment="Top" Visibility="Visible" Width="338">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="57*"/>
+                                <RowDefinition Height="829*"/>
+                            </Grid.RowDefinitions>
+                            <DataGrid x:Name="tabledt" Background="#FF535555" BorderBrush="#1F266F82" ClipboardCopyMode="IncludeHeader" IsReadOnly="True" 
+ Margin="0,28,-1,17" HeadersVisibility="All" Foreground="Black" GridLinesVisibility="Horizontal" BorderThickness="1" 
+                                  VerticalGridLinesBrush="Black"  OpacityMask="#FF716767" Grid.RowSpan="2" />
+
+                            <Label Content="...." x:Name="Connten" HorizontalAlignment="Center" Height="33" VerticalAlignment="Top" Width="346" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="16" FontWeight="Bold" Margin="0,-5,0,0"/>
+                        </Grid>
+
+                    </Grid>
+                </TabItem>
+                <TabItem Header="DataORG">
+                    <TabItem.Background>
+                        <LinearGradientBrush EndPoint="0,1">
+                            <GradientStop Color="#FFF0F0F0"/>
+                            <GradientStop Color="#FF504545" Offset="1"/>
+                        </LinearGradientBrush>
+                    </TabItem.Background>
+                    <Grid>
+                        <Button ToolTip="Copy Data in Table , No Select ALL Table , Only Click button" x:Name="Buttoncopyclipboard" Content="Copy  To  Clipboard" Height="Auto" RenderTransformOrigin="0.5,0.5" FontSize="10" HorizontalContentAlignment="Center" Click="copydatatoclipboard" Margin="0,905,1377,19" Background="#FF17A4D4" Foreground="White" Visibility="Collapsed" />
+                        <DataGrid x:Name="tablebase" Background="#FF535555" BorderBrush="#1F266F82" ClipboardCopyMode="IncludeHeader" IsReadOnly="True" 
+ Margin="0,10,10,53"  HeadersVisibility="All" Foreground="Black" GridLinesVisibility="Horizontal" BorderThickness="1" 
+                                  VerticalGridLinesBrush="Black"  SelectedCellsChanged="tablebase_SelectedCellsChanged" OpacityMask="#FF716767" />
+                        <DataGrid x:Name="Lane_A_CG" Background="#FF535555" BorderBrush="#1F266F82" ClipboardCopyMode="IncludeHeader" IsReadOnly="True" 
+ Margin="0,0,770,53"  HeadersVisibility="All" Foreground="Black" GridLinesVisibility="Horizontal" BorderThickness="1" 
+                                  VerticalGridLinesBrush="Black"  SelectedCellsChanged="tablebase_SelectedCellsChanged" OpacityMask="#FF716767" Visibility="Visible" Width="700" Height="900" />
+                        <DataGrid x:Name="Lane_B_CG" Background="#FF535555" BorderBrush="#1F266F82" ClipboardCopyMode="IncludeHeader" IsReadOnly="True" 
+ Margin="771,0,10,53"  HeadersVisibility="All" Foreground="Black" GridLinesVisibility="Horizontal" BorderThickness="1" 
+                                  VerticalGridLinesBrush="Black"  SelectedCellsChanged="tablebase_SelectedCellsChanged" OpacityMask="#FF716767" Visibility="Visible" Height="900" Width="700" />
+
+                    </Grid>
+
+
+
+
+                </TabItem>
+            </TabControl>
+        </Border>
+
+
+
+        <Grid HorizontalAlignment="Left" Height="610" Margin="13,10,0,0" VerticalAlignment="Top" Width="381">
+
+            <Border BorderBrush="White" BorderThickness="1" HorizontalAlignment="Center" Height="405" VerticalAlignment="Top" Width="381">
+                <Button Content="defaut" HorizontalAlignment="Left" Height="15" Margin="267,183,0,0" VerticalAlignment="Top" Width="32" FontSize="6" Click="Timersetnow"/>
+
+            </Border>
+            <xctk:DateTimePicker x:Name="Time_EN" HorizontalAlignment="Left" Height="25" Margin="82,174,0,0" VerticalAlignment="Top" Width="160" FormatString="yyyy-MM-dd HH:mm:ss" TimeFormatString="HH:mm" TimeFormat="Custom" Format="Custom" Opacity="0.5"/>
+            <xctk:DateTimePicker x:Name="Time_ST" HorizontalAlignment="Left" Height="25" Margin="82,129,0,0" VerticalAlignment="Top" Width="160" FormatString="yyyy-MM-dd HH:mm:ss" TimeFormatString="HH:mm" TimeFormat="Custom" Format="Custom" Opacity="0.5"/>
+
+            <Border BorderBrush="White"  BorderThickness="1" HorizontalAlignment="Center" Height="100" Margin="0,510,0,0" VerticalAlignment="Top" Width="381"/>
+            <ComboBox x:Name="Judgeslection" HorizontalAlignment="Left" Height="25" Margin="82,231,0,0" VerticalAlignment="Top" Width="143" HorizontalContentAlignment="Center" BorderBrush="#89FFFFFF" Foreground="#FF929090" VerticalContentAlignment="Center" TextOptions.TextHintingMode="Animated" RenderTransformOrigin="0.5,0.5" DropDownClosed="Judgeslection_DropDownClosed" IsReadOnly="True" Opacity="0.5" IsEnabled="False">
+                <ComboBox.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform AngleX="0.551"/>
+                        <RotateTransform/>
+                        <TranslateTransform X="0.115"/>
+                    </TransformGroup>
+                </ComboBox.RenderTransform>
+                <ComboBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ComboBoxItem}">
+                        <Setter Property="Background" Value="Black"/>
+                    </Style>
+                </ComboBox.ItemContainerStyle>
+            </ComboBox>
+            <ComboBox x:Name="defectselection" HorizontalAlignment="Left" Height="25" Margin="82,272,0,0" VerticalAlignment="Top" Width="143" HorizontalContentAlignment="Center" BorderBrush="#89FFFFFF" Foreground="#FF908E8E" VerticalContentAlignment="Center" Opacity="0.5" DropDownClosed="defectselection_DropDownClosed">
+                <ComboBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ComboBoxItem}">
+                        <Setter Property="Background" Value="Black"/>
+                    </Style>
+                </ComboBox.ItemContainerStyle>
+            </ComboBox>
+            <ComboBox x:Name="LineSelection" 
+                HorizontalAlignment="Left" 
+                Height="21" 
+                Margin="87,83,0,0" 
+                VerticalAlignment="Top" 
+                Width="91" 
+                Background="#FF535554" 
+                Foreground="#FF888585" 
+                BorderBrush="#FF959697" 
+                IsReadOnly="True" 
+                HorizontalContentAlignment="Center" 
+                VerticalContentAlignment="Center" DropDownClosed="LineSelection_DropDownClosed" Opacity="0.5" IsEnabled="False"
+          >
+                <ComboBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ComboBoxItem}">
+                        <Setter Property="Background" Value="Black"/>
+                    </Style>
+                </ComboBox.ItemContainerStyle>
+            </ComboBox>
+            <Button x:Name="buttonstart"
+                ToolTip="Search for Inspection Data, Time and location selection" Margin="27,337,64,229" Height="Auto" Click="StartSeach" Background="#FFE2C256" Content="Seach ALL" Opacity="0.5" IsEnabled="False"/>
+            <Label Content="Start _ Time" HorizontalAlignment="Left" Height="25" Margin="10,129,0,0" VerticalAlignment="Top" Width="70" Foreground="#DDFFFFFF"/>
+            <Label Content="End _ Time" HorizontalAlignment="Left" Height="24" Margin="10,175,0,0" VerticalAlignment="Top" Width="70" Foreground="#DDFFFFFF"/>
+            <ComboBox x:Name="MachineSelection" 
+                HorizontalAlignment="Left" 
+                Height="21" 
+                Margin="87,10,0,0" 
+                VerticalAlignment="Top" 
+                Width="103" 
+                DropDownClosed="Line_Sel_DropDownClosed" 
+                Background="#FF535555" 
+                Foreground="#FF888585" 
+                BorderBrush="#FFABADB3" 
+                IsReadOnly="True" 
+                HorizontalContentAlignment="Center" 
+                VerticalContentAlignment="Center"
+          >
+                <ComboBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ComboBoxItem}">
+                        <Setter Property="Background" Value="Black"/>
+                    </Style>
+                </ComboBox.ItemContainerStyle>
+                <ComboBoxItem Content="IS_AOI"/>
+                <ComboBoxItem Content="CG_AOI"/>
+                <ComboBoxItem Content="CP_AOI"/>
+                <ComboBoxItem Content="LT_AMI"/>
+                <ComboBoxItem Content="CG_AOI_Plus"/>
+
+            </ComboBox>
+            <Label Content="Line" HorizontalAlignment="Left" Height="28" Margin="44,76,0,0" VerticalAlignment="Top" Width="31" Background="#FF535554" Foreground="#DDFFFFFF"/>
+            <TextBox x:Name="BoxID" HorizontalAlignment="Left" Height="30" Margin="52,545,0,0" VerticalAlignment="Top" Width="201" BorderBrush="#89FFFFFF" Foreground="#FF4E4D4D" MaxLength="10000" TextOptions.TextFormattingMode="Display" AcceptsReturn="True" />
+            <Button
+            
+                Width="100"
+                ToolTip="Seach ID Panel , Only 1 ID Panel" Margin="274,542,7,36" Height="Auto" Click="SeachID" Content="S . ID" Background="#FFEA71A3"/>
+            <TextBlock HorizontalAlignment="Left" Height="20" Margin="57,520,0,0" TextWrapping="Wrap" Text="ID Seach" VerticalAlignment="Top" Width="90" Foreground="White" RenderTransformOrigin="0.5,0.5" FontStyle="Italic">
+                <TextBlock.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform AngleX="7.765"/>
+                        <RotateTransform/>
+                        <TranslateTransform X="1.364"/>
+                    </TransformGroup>
+                </TextBlock.RenderTransform>
+            </TextBlock>
+            <Label Content="Machine" HorizontalAlignment="Left" Height="28" Margin="32,7,0,0" VerticalAlignment="Top" Width="55" Background="#FF535554" Foreground="#DDFFFFFF"/>
+            <Label Content="Judge" HorizontalAlignment="Left" Height="28" Margin="21,231,0,0" VerticalAlignment="Top" Width="49" Foreground="#DDFFFFFF"/>
+            <Label Content="Defect" HorizontalAlignment="Left" Height="25" Margin="21,275,0,0" VerticalAlignment="Top" Width="56" Foreground="#DDFFFFFF"/>
+
+            <TextBox x:Name="data_limit_seach" HorizontalAlignment="Left" Height="29" Margin="155,476,0,0" TextWrapping="Wrap" Text="20000" VerticalAlignment="Top" Width="98" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="#FF535555"/>
+            <Label Content="Limit Seach In Table" HorizontalAlignment="Left" Height="24" Margin="21,476,0,0" VerticalAlignment="Top" Width="116"/>
+            <CheckBox x:Name="checkerdataintable" Content="Data -&gt;Table(DataORG)" HorizontalAlignment="Left" Height="16" Margin="87,316,0,0" VerticalAlignment="Top" Width="155"/>
+        </Grid>
+        <Grid x:Name="GriddataCP_XML"  HorizontalAlignment="Left" Height="255" Margin="2,644,0,0" VerticalAlignment="Top" Width="392" Visibility="Visible">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Border BorderBrush="White" BorderThickness="0.5" Margin="179,0,102,0"/>
+            <Border Margin="10,0,0,0" BorderBrush="White" BorderThickness="1" />
+
+            <Border BorderBrush="White" BorderThickness="0.5" Margin="10,35,0,0"/>
+            <Border BorderBrush="White" BorderThickness="0.5" Margin="66,0,213,0"/>
+            <Label Content="Total" HorizontalAlignment="Left" Height="30" Margin="6,35,0,0" VerticalAlignment="Top" Width="58" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="NG" HorizontalAlignment="Left" Height="30" Margin="6,145,0,0" VerticalAlignment="Top" Width="60" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="OK" HorizontalAlignment="Left" Height="30" Margin="6,85,0,0" VerticalAlignment="Top" Width="60" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="N/A" HorizontalAlignment="Left" Height="30" Margin="6,200,0,0" VerticalAlignment="Top" Width="60" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="TotalOKA" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="55" Margin="67,85,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="YRTOKA" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="56" Margin="122,85,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="TotalOKB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="56" Margin="179,85,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="YRTOKB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="55" Margin="235,85,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="TotalNGA" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="55" Margin="67,145,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="YRTNGA" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="57" Margin="122,145,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="TotalNGB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="55" Margin="179,145,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="YRTNGB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="55" Margin="235,145,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="TotalNAA" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="55" Margin="67,200,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="YRTNAA" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="57" Margin="122,200,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="TotalNAB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="56" Margin="179,200,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="YRTNAB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="55" Margin="235,200,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="TotalBBB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="60" Margin="206,35,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            <Label Content="..." x:Name="TotalAAA" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="60" Margin="92,35,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            <Label x:Name="LaneALTAMI" Content="A" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="109" Margin="69,5,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            <Label x:Name="LaneBLTAMI" Content="B" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="111" Margin="179,5,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            <Label Content="..." x:Name="TotalALLAB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="50" Margin="315,35,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+
+            <Label Content="..." x:Name="TotalOKAB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="51" Margin="290,85,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            <Label Content="..." x:Name="TotalNGAB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="51" Margin="290,145,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            <Label Content="..." x:Name="TotalNAAB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="51" Margin="290,200,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            <Label Content="Total" HorizontalAlignment="Left" Height="30" Margin="311,5,0,0" VerticalAlignment="Top" Width="58" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Label Content="..." x:Name="YRTALLOKAB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="51" Margin="341,85,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            <Label Content="..." x:Name="YRTALLNGAB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="51" Margin="341,145,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            <Label Content="..." x:Name="YRTALLNAAB" HorizontalAlignment="Left" Height="30" VerticalAlignment="Top" Width="51" Margin="341,200,0,0" Background="{x:Null}" Foreground="#DDFDFDFD" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        </Grid>
+        <Grid x:Name="ProgressbarShow" Margin="788,392,788,532" Visibility="Collapsed" >
+            <ProgressBar HorizontalAlignment="Center" Height="27" VerticalAlignment="Center" Width="266" IsIndeterminate="True" Foreground="#FFB1441B" BorderBrush="#FF05D6BE" />
+            <TextBlock HorizontalAlignment="Left" Height="28" Margin="39,24,0,0" TextWrapping="Wrap" Text="Waiting......." VerticalAlignment="Top" Width="90" FontSize="15" Foreground="White"/>
+        </Grid>
+
+    </Grid>
+</Window>
