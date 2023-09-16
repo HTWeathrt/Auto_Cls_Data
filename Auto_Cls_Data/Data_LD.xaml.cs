@@ -20,8 +20,7 @@ using System.Diagnostics.Metrics;
 using System.IO;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
-
-
+using System.ComponentModel;
 
 namespace Auto_Cls_Data
 {
@@ -33,8 +32,14 @@ namespace Auto_Cls_Data
         public Data_LD()
         {
             InitializeComponent();
+
         }
-        private async void Timer_Tick(object sender, EventArgs e)
+
+      
+            
+
+        
+            private async void Timer_Tick(object sender, EventArgs e)
         {
             WindownOpen();
             Stepbystop();
@@ -265,8 +270,6 @@ namespace Auto_Cls_Data
                 {
 
                 }
-                    
-
                 SocicalDefect.Add(" ");
                
             }

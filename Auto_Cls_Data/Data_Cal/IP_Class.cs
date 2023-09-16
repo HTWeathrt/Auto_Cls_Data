@@ -113,9 +113,9 @@ namespace Auto_Cls_Data.Data_Cal
                     case "503_B":
                         ip_in = "10.121.51.14"; break;
                     case "504_A":
-                        ip_in = "10.121.51.16"; break;
-                    case "504_B":
                         ip_in = "10.121.51.18"; break;
+                    case "504_B":
+                        ip_in = "10.121.51.16"; break;
                 }
             }
             if (Name_Machix == "CP_AOI")
@@ -182,7 +182,15 @@ namespace Auto_Cls_Data.Data_Cal
                         ip_in = "10.121.56.159"; break;
                 }
             }
-
+            if (Name_Machix == "Assy_AMI")
+            {
+                Data_Basexx = "assembly_ami";
+                switch (Line)
+                {
+                    case "301":
+                        ip_in = "10.119.128.11"; break;
+                }
+            }
         }
 
     }

@@ -8,7 +8,7 @@
         
         mc:Ignorable="d"
         Title="Auto.Inspection.Cls (PO Assy/Inspection Team 1)  " Height="1080" Width="1920" ShowActivated="False" ContentStringFormat="yyyy-MM-dd HH:mm:ss" Icon="logo/LogoAuto_cs.ico"  >
-    <Grid Margin="0,0,0,-1" AllowDrop="True" OpacityMask="#FF956A6A" Background="#FF535555">
+    <Grid Margin="0,0,0,-1" AllowDrop="True" OpacityMask="#FF956A6A" Background="#FF636363">
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -54,7 +54,7 @@
                                   Margin="430,20,654,10" HeadersVisibility="All" Foreground="Black" GridLinesVisibility="Horizontal" BorderThickness="1" 
                                   VerticalGridLinesBrush="Black"  SelectedCellsChanged="TableB_SelectedCellsChanged_1" OpacityMask="#FF716767" Width="400" Visibility="Collapsed" >
                         </DataGrid >
-                        <Grid Margin="463,59,684,10" x:Name="tableIDpanel" Visibility="Visible" >
+                        <Grid Margin="463,59,661,10" x:Name="tableIDpanel" Visibility="Visible" >
                             <DataGrid x:Name="tableidpanel" Background="#FF535555" BorderBrush="#1F266F82" ClipboardCopyMode="IncludeHeader" IsReadOnly="True" 
                                 Margin="0,33,0,0" HeadersVisibility="All" Foreground="Black" GridLinesVisibility="Horizontal" BorderThickness="1" 
                                 VerticalGridLinesBrush="Black" OpacityMask="#FF716767"  />
@@ -73,7 +73,6 @@
 
                             <Label Content="...." x:Name="Connten" HorizontalAlignment="Center" Height="33" VerticalAlignment="Top" Width="346" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="16" FontWeight="Bold" Margin="0,-5,0,0"/>
                         </Grid>
-
                     </Grid>
                 </TabItem>
                 <TabItem Header="DataORG">
@@ -106,7 +105,7 @@
 
 
 
-        <Grid HorizontalAlignment="Left" Height="610" Margin="13,10,0,0" VerticalAlignment="Top" Width="381">
+        <Grid HorizontalAlignment="Left" Height="629" Margin="13,10,0,0" VerticalAlignment="Top" Width="381">
 
             <Border BorderBrush="White" BorderThickness="1" HorizontalAlignment="Center" Height="405" VerticalAlignment="Top" Width="381">
                 <Button Content="defaut" HorizontalAlignment="Left" Height="15" Margin="267,183,0,0" VerticalAlignment="Top" Width="32" FontSize="6" Click="Timersetnow"/>
@@ -115,7 +114,7 @@
             <xctk:DateTimePicker x:Name="Time_EN" HorizontalAlignment="Left" Height="25" Margin="82,174,0,0" VerticalAlignment="Top" Width="160" FormatString="yyyy-MM-dd HH:mm:ss" TimeFormatString="HH:mm" TimeFormat="Custom" Format="Custom" Opacity="0.5"/>
             <xctk:DateTimePicker x:Name="Time_ST" HorizontalAlignment="Left" Height="25" Margin="82,129,0,0" VerticalAlignment="Top" Width="160" FormatString="yyyy-MM-dd HH:mm:ss" TimeFormatString="HH:mm" TimeFormat="Custom" Format="Custom" Opacity="0.5"/>
 
-            <Border BorderBrush="White"  BorderThickness="1" HorizontalAlignment="Center" Height="100" Margin="0,510,0,0" VerticalAlignment="Top" Width="381"/>
+            <Border BorderBrush="White"  BorderThickness="1" HorizontalAlignment="Center" Height="119" Margin="0,510,0,0" VerticalAlignment="Top" Width="381"/>
             <ComboBox x:Name="Judgeslection" HorizontalAlignment="Left" Height="25" Margin="82,231,0,0" VerticalAlignment="Top" Width="143" HorizontalContentAlignment="Center" BorderBrush="#89FFFFFF" Foreground="#FF929090" VerticalContentAlignment="Center" TextOptions.TextHintingMode="Animated" RenderTransformOrigin="0.5,0.5" DropDownClosed="Judgeslection_DropDownClosed" IsReadOnly="True" Opacity="0.5" IsEnabled="False">
                 <ComboBox.RenderTransform>
                     <TransformGroup>
@@ -158,7 +157,7 @@
                 </ComboBox.ItemContainerStyle>
             </ComboBox>
             <Button x:Name="buttonstart"
-                ToolTip="Search for Inspection Data, Time and location selection" Margin="27,337,64,229" Height="Auto" Click="StartSeach" Background="#FFE2C256" Content="Seach ALL" Opacity="0.5" IsEnabled="False"/>
+                ToolTip="Search for Inspection Data, Time and location selection" Margin="30,355,61,240" Height="Auto" Click="StartSeach" Content="Seach ALL" Opacity="0.5" IsEnabled="False" Background="#FFD1DE58"/>
             <Label Content="Start _ Time" HorizontalAlignment="Left" Height="25" Margin="10,129,0,0" VerticalAlignment="Top" Width="70" Foreground="#DDFFFFFF"/>
             <Label Content="End _ Time" HorizontalAlignment="Left" Height="24" Margin="10,175,0,0" VerticalAlignment="Top" Width="70" Foreground="#DDFFFFFF"/>
             <ComboBox x:Name="MachineSelection" 
@@ -184,16 +183,17 @@
                 <ComboBoxItem Content="CG_AOI"/>
                 <ComboBoxItem Content="CP_AOI"/>
                 <ComboBoxItem Content="LT_AMI"/>
+                <ComboBoxItem Content="Assy_AMI"/>
                 <ComboBoxItem Content="CG_AOI_Plus"/>
 
             </ComboBox>
             <Label Content="Line" HorizontalAlignment="Left" Height="28" Margin="44,76,0,0" VerticalAlignment="Top" Width="31" Background="#FF535554" Foreground="#DDFFFFFF"/>
-            <TextBox x:Name="BoxID" HorizontalAlignment="Left" Height="30" Margin="52,545,0,0" VerticalAlignment="Top" Width="201" BorderBrush="#89FFFFFF" Foreground="#FF4E4D4D" MaxLength="10000" TextOptions.TextFormattingMode="Display" AcceptsReturn="True" />
+            <TextBox x:Name="BoxID" HorizontalAlignment="Left" Height="30" Margin="48,539,0,0" VerticalAlignment="Top" Width="201" BorderBrush="#89FFFFFF" Foreground="#FF4E4D4D" MaxLength="10000" TextOptions.TextFormattingMode="Display" AcceptsReturn="True" />
             <Button
             
                 Width="100"
-                ToolTip="Seach ID Panel , Only 1 ID Panel" Margin="274,542,7,36" Height="Auto" Click="SeachID" Content="S . ID" Background="#FFEA71A3"/>
-            <TextBlock HorizontalAlignment="Left" Height="20" Margin="57,520,0,0" TextWrapping="Wrap" Text="ID Seach" VerticalAlignment="Top" Width="90" Foreground="White" RenderTransformOrigin="0.5,0.5" FontStyle="Italic">
+                ToolTip="Seach ID Panel , Only 1 ID Panel" Margin="270,536,11,60" Height="Auto" Click="SeachID" Content="S . ID" Background="#FFEA71A3"/>
+            <TextBlock HorizontalAlignment="Left" Height="20" Margin="53,514,0,0" TextWrapping="Wrap" Text="ID Seach" VerticalAlignment="Top" Width="90" Foreground="White" RenderTransformOrigin="0.5,0.5" FontStyle="Italic">
                 <TextBlock.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
@@ -209,7 +209,22 @@
 
             <TextBox x:Name="data_limit_seach" HorizontalAlignment="Left" Height="29" Margin="155,476,0,0" TextWrapping="Wrap" Text="20000" VerticalAlignment="Top" Width="98" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="#FF535555"/>
             <Label Content="Limit Seach In Table" HorizontalAlignment="Left" Height="24" Margin="21,476,0,0" VerticalAlignment="Top" Width="116"/>
-            <CheckBox x:Name="checkerdataintable" Content="Data -&gt;Table(DataORG)" HorizontalAlignment="Left" Height="16" Margin="87,316,0,0" VerticalAlignment="Top" Width="155"/>
+            <CheckBox x:Name="checkerdataintable" Content="Data -&gt;Table(DataORG)" HorizontalAlignment="Left" Height="16" Margin="87,314,0,0" VerticalAlignment="Top" Width="155"/>
+            <TextBox x:Name="BoxPIDID" HorizontalAlignment="Left" Height="30" Margin="48,596,0,0" VerticalAlignment="Top" Width="201" BorderBrush="#89FFFFFF" Foreground="#FF4E4D4D" MaxLength="10000" TextOptions.TextFormattingMode="Display" AcceptsReturn="True" />
+            <Button
+            
+                Width="100"
+                ToolTip="Seach ID Panel , Only 1 ID Panel" Margin="270,593,11,3" Height="Auto" Click="SeachPIDID" Content="S . PID" Background="#FFEA71A3"/>
+            <TextBlock HorizontalAlignment="Left" Height="20" Margin="53,571,0,0" TextWrapping="Wrap" Text="Pib Seach" VerticalAlignment="Top" Width="90" Foreground="White" RenderTransformOrigin="0.5,0.5" FontStyle="Italic">
+                <TextBlock.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform AngleX="7.765"/>
+                        <RotateTransform/>
+                        <TranslateTransform X="1.364"/>
+                    </TransformGroup>
+                </TextBlock.RenderTransform>
+            </TextBlock>
         </Grid>
         <Grid x:Name="GriddataCP_XML"  HorizontalAlignment="Left" Height="255" Margin="2,644,0,0" VerticalAlignment="Top" Width="392" Visibility="Visible">
             <Grid.RowDefinitions>
