@@ -113,8 +113,6 @@
             </Border>
             <xctk:DateTimePicker x:Name="Time_EN" HorizontalAlignment="Left" Height="25" Margin="82,174,0,0" VerticalAlignment="Top" Width="160" FormatString="yyyy-MM-dd HH:mm:ss" TimeFormatString="HH:mm" TimeFormat="Custom" Format="Custom" Opacity="0.5"/>
             <xctk:DateTimePicker x:Name="Time_ST" HorizontalAlignment="Left" Height="25" Margin="82,129,0,0" VerticalAlignment="Top" Width="160" FormatString="yyyy-MM-dd HH:mm:ss" TimeFormatString="HH:mm" TimeFormat="Custom" Format="Custom" Opacity="0.5"/>
-
-            <Border BorderBrush="White"  BorderThickness="1" HorizontalAlignment="Center" Height="119" Margin="0,510,0,0" VerticalAlignment="Top" Width="381"/>
             <ComboBox x:Name="Judgeslection" HorizontalAlignment="Left" Height="25" Margin="82,231,0,0" VerticalAlignment="Top" Width="143" HorizontalContentAlignment="Center" BorderBrush="#89FFFFFF" Foreground="#FF929090" VerticalContentAlignment="Center" TextOptions.TextHintingMode="Animated" RenderTransformOrigin="0.5,0.5" DropDownClosed="Judgeslection_DropDownClosed" IsReadOnly="True" Opacity="0.5" IsEnabled="False">
                 <ComboBox.RenderTransform>
                     <TransformGroup>
@@ -188,43 +186,20 @@
 
             </ComboBox>
             <Label Content="Line" HorizontalAlignment="Left" Height="28" Margin="44,76,0,0" VerticalAlignment="Top" Width="31" Background="#FF535554" Foreground="#DDFFFFFF"/>
-            <TextBox x:Name="BoxID" HorizontalAlignment="Left" Height="30" Margin="48,539,0,0" VerticalAlignment="Top" Width="201" BorderBrush="#89FFFFFF" Foreground="#FF4E4D4D" MaxLength="10000" TextOptions.TextFormattingMode="Display" AcceptsReturn="True" />
+            <TextBox x:Name="BoxID" HorizontalAlignment="Left" Height="30" Margin="21,589,0,0" VerticalAlignment="Top" Width="224" BorderBrush="#89FFFFFF" Foreground="#FF4E4D4D" MaxLength="10000" TextOptions.TextFormattingMode="Display" AcceptsReturn="True" />
             <Button
             
                 Width="100"
-                ToolTip="Seach ID Panel , Only 1 ID Panel" Margin="270,536,11,60" Height="Auto" Click="SeachID" Content="S . ID" Background="#FFEA71A3"/>
-            <TextBlock HorizontalAlignment="Left" Height="20" Margin="53,514,0,0" TextWrapping="Wrap" Text="ID Seach" VerticalAlignment="Top" Width="90" Foreground="White" RenderTransformOrigin="0.5,0.5" FontStyle="Italic">
-                <TextBlock.RenderTransform>
-                    <TransformGroup>
-                        <ScaleTransform/>
-                        <SkewTransform AngleX="7.765"/>
-                        <RotateTransform/>
-                        <TranslateTransform X="1.364"/>
-                    </TransformGroup>
-                </TextBlock.RenderTransform>
-            </TextBlock>
+                ToolTip="Seach ID Panel , Only 1 ID Panel" Margin="271,589,10,10" Height="Auto" Click="SeachID" Content="S . ID" Background="#FFEA71A3"/>
             <Label Content="Machine" HorizontalAlignment="Left" Height="28" Margin="32,7,0,0" VerticalAlignment="Top" Width="55" Background="#FF535554" Foreground="#DDFFFFFF"/>
             <Label Content="Judge" HorizontalAlignment="Left" Height="28" Margin="21,231,0,0" VerticalAlignment="Top" Width="49" Foreground="#DDFFFFFF"/>
             <Label Content="Defect" HorizontalAlignment="Left" Height="25" Margin="21,275,0,0" VerticalAlignment="Top" Width="56" Foreground="#DDFFFFFF"/>
 
-            <TextBox x:Name="data_limit_seach" HorizontalAlignment="Left" Height="29" Margin="155,476,0,0" TextWrapping="Wrap" Text="20000" VerticalAlignment="Top" Width="98" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="#FF535555"/>
-            <Label Content="Limit Seach In Table" HorizontalAlignment="Left" Height="24" Margin="21,476,0,0" VerticalAlignment="Top" Width="116"/>
+            <TextBox x:Name="data_limit_seach" HorizontalAlignment="Left" Height="29" Margin="164,419,0,0" TextWrapping="Wrap" Text="20000" VerticalAlignment="Top" Width="98" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="#FF535555"/>
+            <Label Content="Limit Seach In Table" HorizontalAlignment="Left" Height="24" Margin="30,419,0,0" VerticalAlignment="Top" Width="116"/>
             <CheckBox x:Name="checkerdataintable" Content="Data -&gt;Table(DataORG)" HorizontalAlignment="Left" Height="16" Margin="87,314,0,0" VerticalAlignment="Top" Width="155"/>
-            <TextBox x:Name="BoxPIDID" HorizontalAlignment="Left" Height="30" Margin="48,596,0,0" VerticalAlignment="Top" Width="201" BorderBrush="#89FFFFFF" Foreground="#FF4E4D4D" MaxLength="10000" TextOptions.TextFormattingMode="Display" AcceptsReturn="True" />
-            <Button
-            
-                Width="100"
-                ToolTip="Seach ID Panel , Only 1 ID Panel" Margin="270,593,11,3" Height="Auto" Click="SeachPIDID" Content="S . PID" Background="#FFEA71A3"/>
-            <TextBlock HorizontalAlignment="Left" Height="20" Margin="53,571,0,0" TextWrapping="Wrap" Text="Pib Seach" VerticalAlignment="Top" Width="90" Foreground="White" RenderTransformOrigin="0.5,0.5" FontStyle="Italic">
-                <TextBlock.RenderTransform>
-                    <TransformGroup>
-                        <ScaleTransform/>
-                        <SkewTransform AngleX="7.765"/>
-                        <RotateTransform/>
-                        <TranslateTransform X="1.364"/>
-                    </TransformGroup>
-                </TextBlock.RenderTransform>
-            </TextBlock>
+            <CheckBox Content="Seach__PanelID" HorizontalAlignment="Left" Height="28" Margin="25,528,0,0" VerticalAlignment="Top" Width="108"/>
+            <CheckBox Content="Seach__short_serial_no" HorizontalAlignment="Left" Height="28" Margin="162,528,0,0" VerticalAlignment="Top" Width="93"/>
         </Grid>
         <Grid x:Name="GriddataCP_XML"  HorizontalAlignment="Left" Height="255" Margin="2,644,0,0" VerticalAlignment="Top" Width="392" Visibility="Visible">
             <Grid.RowDefinitions>

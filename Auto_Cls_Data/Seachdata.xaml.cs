@@ -45,7 +45,6 @@ namespace Auto_Cls_Data
         }
         private void TableAssyAMI()
         {
-
             string Zone_A = "SUM(CASE WHEN eqp_zone = 'A' THEN 1 ELSE 0 END) AS Zone_A";
             string Zone_B = "SUM(CASE WHEN eqp_zone = 'B' THEN 1 ELSE 0 END) AS Zone_B";
             string Zone_C = "SUM(CASE WHEN eqp_zone = 'C' THEN 1 ELSE 0 END) AS Zone_C";
@@ -85,6 +84,7 @@ namespace Auto_Cls_Data
                     {
                         TableAssyAMI();
                     }
+
                     MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
                     DataTable sqlbaseTable = new DataTable();
                     adapter.Fill(sqlbaseTable);
@@ -1568,7 +1568,7 @@ namespace Auto_Cls_Data
             contentableidpanel.Content = "Table__Defect__ID__Mapping";
             Mapping_CGAOI.Margin = new Thickness(854, 64, 0, 0);
             checkerdataintable.IsEnabled = true;
-            IS_Report = false;
+            
             //Table Loading
             CleardatatableGrid();
             switch (MachineSelection.Text)
@@ -1610,8 +1610,7 @@ namespace Auto_Cls_Data
                         tablebase.Visibility = Visibility.Visible;
                         Mapping_CGAOI.Visibility = Visibility.Collapsed;
                         table2.Visibility = Visibility.Visible;
-                        Report_IStb.Visibility = Visibility.Visible;
-                        IS_Report = true;
+                       
                         string[] AddItemLineName = { "301", "302", "303", "304", "305", "306", "402", "404", "405", "406", "501", "502", "503", "504", "505", "506" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
