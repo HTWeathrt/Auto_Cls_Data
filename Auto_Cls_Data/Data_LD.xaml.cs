@@ -34,12 +34,7 @@ namespace Auto_Cls_Data
             InitializeComponent();
 
         }
-
-      
-            
-
-        
-            private async void Timer_Tick(object sender, EventArgs e)
+        private void Timer_Tick(object sender, EventArgs e)
         {
             WindownOpen();
             Stepbystop();
@@ -415,8 +410,6 @@ namespace Auto_Cls_Data
             thread5.SetApartmentState(ApartmentState.STA);
             thread5.IsBackground = true;
             thread5.Start();
-
-
             Window1 adb = new Window1();
             adb.Left = 850;         
             adb.Top = 300;

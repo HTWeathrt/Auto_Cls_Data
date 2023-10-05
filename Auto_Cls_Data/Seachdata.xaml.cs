@@ -20,19 +20,29 @@ using System.Collections;
 using Auto_Cls_Data.Data_Cal;
 using System.Diagnostics.Eventing.Reader;
 using static System.Net.Mime.MediaTypeNames;
+using Auto_Cls_Data.Gplus;
+using System.Windows.Forms.VisualStyles;
 
 namespace Auto_Cls_Data
 {
     public partial class Seachdata : Window
     {
+        NewLoading newloading;
+        SQLLoading sqload;
+        IP_Class iP_Class;
+        CGAOIPlus cgaoiplus;
         public Seachdata()
         {
             InitializeComponent();
             lddatime();
         }
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            System.Windows.Forms.Application.Exit();
+        }
         private void lddatime()
         {
-            // Tải thời gian đầu tiên
+            Seachpanelid.IsChecked = false;
             Time_EN.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             DateTime now = DateTime.Now;
             TimeSpan hihi = TimeSpan.FromMinutes(120);
@@ -43,19 +53,27 @@ namespace Auto_Cls_Data
         {
             Time_EN.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
         }
-        private void TableAssyAMI()
+        private void TableAssyAMI(string TimerST,string TimerEN,string Machine,string Line)
         {
-            string Zone_A = "SUM(CASE WHEN eqp_zone = 'A' THEN 1 ELSE 0 END) AS Zone_A";
-            string Zone_B = "SUM(CASE WHEN eqp_zone = 'B' THEN 1 ELSE 0 END) AS Zone_B";
-            string Zone_C = "SUM(CASE WHEN eqp_zone = 'C' THEN 1 ELSE 0 END) AS Zone_C";
-            string Zone_D = "SUM(CASE WHEN eqp_zone = 'D' THEN 1 ELSE 0 END) AS Zone_D";
-            string sqlX = "SELECT judge,final_defect_name," + Zone_A + "," + Zone_B + "," + Zone_C + "," + Zone_D + " FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' GROUP BY final_defect_name LIMIT 50000";
+            newloading = new NewLoading();
+            string SQLLD = "";
+            if (Machine == "Assy_AMI")
+            {
+                SQLLD = newloading.LoadAssyAMI(TimerST, TimerEN);
+            }
+            if(Machine =="CP_AOI")
+            {
+                SQLLD = newloading.LoadCPAOI(TimerST, TimerEN);
+            }
+            if(Machine == "LT_AMI")
+            {
+                SQLLD = newloading.LoadLTAMI(TimerST, TimerEN);
+            }
             //
-            MySqlCommand SQLCommandloading = new MySqlCommand(sqlX, connection);
+            MySqlCommand SQLCommandloading = new MySqlCommand(SQLLD, connection);
             MySqlDataAdapter adapter = new MySqlDataAdapter(SQLCommandloading);
             DataTable sqlbaseTable = new DataTable();
             adapter.Fill(sqlbaseTable);
-
             sqlbaseTable.Columns.Add("STT");
             sqlbaseTable.Columns["STT"].SetOrdinal(0);
             int ixb = 1;
@@ -63,44 +81,48 @@ namespace Auto_Cls_Data
             {
                 rowxa["STT"] = ixb++;
             }
-            tableidpanel.ItemsSource = sqlbaseTable.DefaultView;
+            tablepanel.ItemsSource = sqlbaseTable.DefaultView;
             sqlbaseTable.Dispose();
         }
-        public void Connection()
+        public void Connection(string TimerST,string TimerEN,string Machine,string Line,string Judge,string Defection,int DataLimit)
         {
             try
-            {
-                IP_Class ipcls = new IP_Class();
-                ipcls.IP_Selx(MachineSelection.Text, LineSelection.Text);
-                ip_selc = ipcls.Ip_in;
-                dataXL = ipcls.Data_Basexx;
-                connection = new MySqlConnection("Server=" + ip_selc + "; Database=" + dataXL + "; Port=3306; User = ami; Password = protnc"); //charSet = utf8"
+            {   
+                string Connec = sqload.DBShow(Machine, Line);
+                connection = new MySqlConnection(Connec); 
                 connection.Open();
                 if (connection.State == System.Data.ConnectionState.Open)
                 {
-                    TableALL();
-                    tabletileld();
-                    if(MachineSelection.Text == "Assy_AMI")
+                    
+                    string sqlselection = newloading.TableDatabaseShow(TimerST, TimerEN, DataLimit, Judge, Defection);
+                    //
+                    cmd = new MySqlCommand(sqlselection, connection);
+                    //(string Machine , string Limited, string TimerST, string TimerEN)
+                    if (Machine =="Assy_AMI" || Machine == "CP_AOI" || Machine =="LT_AMI")
                     {
-                        TableAssyAMI();
+                        TableAssyAMI(TimerST, TimerEN, Machine,Line);
                     }
-
                     MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
                     DataTable sqlbaseTable = new DataTable();
                     adapter.Fill(sqlbaseTable);
-                    Caculator(sqlbaseTable);
-                    if (checkerdataintable.IsChecked == true)
+                    sqlbaseTable.Columns.Add("STT");
+                    sqlbaseTable.Columns["STT"].SetOrdinal(0);
+                    int ixb = 1;
+                    
+                    tabletileld(Machine, DataLimit, TimerST, TimerEN);
+
+
+                    foreach (DataRow rowxa in sqlbaseTable.Rows)
                     {
-                        sqlbaseTable.Columns.Add("STT");
-                        sqlbaseTable.Columns["STT"].SetOrdinal(0);
-                        int ixb = 1;
-                        foreach (DataRow rowxa in sqlbaseTable.Rows)
-                        {
-                            rowxa["STT"] = ixb++;
-                        }
+                        rowxa["STT"] = ixb++;
+                    }
+                    Caculator(sqlbaseTable);
+                    if (DatashowTable == true)
+                    {
                         tablebase.ItemsSource = sqlbaseTable.DefaultView;
                     }
                     sqlbaseTable.Dispose();
+                    
                 }
                 connection.Close();
                 return;
@@ -112,36 +134,15 @@ namespace Auto_Cls_Data
                 return;
             }
         }
-       
-        private void tabletileld()
+        private void tabletileld(string Machine ,  int Limited, string TimerST, string TimerEN)
         {
+            newloading = new NewLoading();
             //Table dữ liệu tính toán cho CG_AOI
-            string sql = "";
-            if (MachineSelection.Text == "CG_AOI"  )
-            {
-                //LoadingData Window1 = new LoadingData();
-                 sql = "SELECT judge, priority_defect_name, COUNT(*) AS count_defects, ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "'), 2) AS percent_defects FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' GROUP BY judge, priority_defect_name ORDER BY priority_defect_name LIMIT " + data_limit_seach.Text + "";
-                
-            }
-            else if (MachineSelection.Text == "CP_AOI" || MachineSelection.Text == "LT_AMI")
-            {
-                 sql = "SELECT judge, priority_defect_name, COUNT(*) AS count_defects, ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "'), 2) AS percent_defects FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' GROUP BY judge, priority_defect_name ORDER BY priority_defect_name LIMIT " + data_limit_seach.Text + "";
-            }
-            else if(MachineSelection.Text == "Assy_AMI")
-            {
-                //LoadingData Window1 = new LoadingData();
-                 sql = "SELECT judge, final_defect_name, COUNT(*) AS Count__Defect, ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "'), 2) AS Percent FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' GROUP BY judge, final_defect_name ORDER BY final_defect_name LIMIT " + data_limit_seach.Text + "";
-            }
-            else if(MachineSelection.Text == "IS_AOI")
-            {
-                //LoadingData Window1 = new LoadingData();
-                 sql = "SELECT prev_insp_chuck_no AS TableInk , judge, priority_defect_name, COUNT(*) AS count_defects, ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "'), 2) AS percent_defects FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' GROUP BY judge, priority_defect_name ORDER BY priority_defect_name LIMIT " + data_limit_seach.Text + "";
-            }
+            string sql = newloading.YRTtable(Machine,TimerST,TimerEN,Limited);
             MySqlCommand act = new MySqlCommand(sql, connection);
             MySqlDataAdapter adapter2 = new MySqlDataAdapter(act);
             DataTable sqltbrateTable = new DataTable();
             adapter2.Fill(sqltbrateTable);
-           
             sqltbrateTable.Columns.Add("STT");
             sqltbrateTable.Columns["STT"].SetOrdinal(0);
             int ixb = 1;
@@ -152,312 +153,76 @@ namespace Auto_Cls_Data
             table2.ItemsSource = sqltbrateTable.DefaultView;
             sqltbrateTable.Dispose();
         }
-       
-        public void TableALL()
-        {
-            string query = "";
-            if (Judgeslection.Text == "ALL")
-            {
-                 query = "SELECT * FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' LIMIT " + data_limit_seach.Text + "";
-                cmd = new MySqlCommand(query, connection);
-            }
-            if (Judgeslection.Text != "ALL")
-            {
-                if (Judgeslection.Text == "OK" || Judgeslection.Text == "G")
-                {
-                    query = "SELECT * FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND judge = '" + Judgeslection.Text + "' LIMIT " + data_limit_seach.Text + "";
-                    cmd = new MySqlCommand(query, connection);
-                }
-                if (Judgeslection.Text == "NG" || Judgeslection.Text == "N")
-                {    string Defectioxxx = Judgeslection.Text;
-                    if(defectselection.Text == "ALL")
-                    {
-                        query = "SELECT * FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND judge = '" + Defectioxxx + "' LIMIT " + data_limit_seach.Text + "";
-                        cmd = new MySqlCommand(query, connection);
-                    }
-                    else
-                    {
-                        query = "SELECT * FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND priority_defect_name = '" + defectselection.Text + "' LIMIT " + data_limit_seach.Text + "";
-                        cmd = new MySqlCommand(query, connection);
-                    }
-                }
-            }
-            //setting.LimitSeach = dataasetting.LimitSeach;
-        }
         public void StartSeach(object sender, RoutedEventArgs e)
         {
+            sqload = new SQLLoading();
+            newloading = new NewLoading();
+            iP_Class = new IP_Class();
+            cgaoiplus = new CGAOIPlus();
 
+            string Machine = MachineSelection.Text;
+            string Line = LineSelection.Text;
+            int DataLimit = Convert.ToInt32(data_limit_seach.Text);
+            string TimerST = Time_ST.Text;
+            string TimerEN = Time_EN.Text;
+            string Judge = Judgeslection.Text;
+            string Defection = defectselection.Text;
+            if (Machine == string.Empty || Line == string.Empty)
+            {
+                MessageBox.Show("No Data LD");
+                return;
+            }
             CleardatatableGrid();
             Showwindown();
-            if (MachineSelection.Text != "CG_AOI_Plus")
-            {
-                Connection();
-                 adb.Close();
-                
-                //string YRRT_AssyAMI = "SELECT priority_defect_name,judge,eqp_zone FROM product  ";
+            if (Machine != "CG_AOI_Plus")
+            {// public void Connection(string TimerST,string TimerEN,string Machine,string Line,string Judge,string Defection,int DataLimit)
+                Connection(TimerST, TimerEN, Machine,Line,Judge,Defection,DataLimit);
             }
             else
             {
-                Machinex = MachineSelection.Text;
-                IP_Class iP_Class = new IP_Class();
                 foreach (string Item in IPMachine_CGPlus)
                 {
-                    //ConnectionCGPlus();
-                    iP_Class.IP_Selx(Machinex, Item);
-                    string Lane = Item.Substring(4, 1);
-                    ip_selc = iP_Class.Ip_in;
-                    dataXL = iP_Class.Data_Basexx;
-                    ConnectionCGPlus(Lane);
-                }
-                adb.Close();
-            }
-        }
-        private void CGplustableA(string Lane)
-        {
-            string sql = "SELECT judge, priority_defect_name, COUNT(*) AS Count_Def, ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "'), 2) AS Percent FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' GROUP BY judge, priority_defect_name ORDER BY priority_defect_name LIMIT " + data_limit_seach.Text + "";
-            MySqlCommand act = new MySqlCommand(sql, connection);
-            MySqlDataAdapter adapter2 = new MySqlDataAdapter(act);
-            DataTable sqltbrateTable = new DataTable();
-            adapter2.Fill(sqltbrateTable);
-            sqltbrateTable.Columns.Add("STT");
-            sqltbrateTable.Columns["STT"].SetOrdinal(0);
-            int ixb = 1;
-            foreach (DataRow rowxa in sqltbrateTable.Rows)
-            {
-                rowxa["STT"] = ixb++;
-            }
-            if (Lane == "A")
-            {
-                table2.ItemsSource = sqltbrateTable.DefaultView;
-            }
-            else if (Lane == "B")
-            {
-                TableB.ItemsSource = sqltbrateTable.DefaultView;
-            }
-            sqltbrateTable.Dispose();
-        }
-
-        private void ConnectionCGPlus(string Lane)
-        {
-            try
-            {
-                connection = new MySqlConnection("Server=" + ip_selc + "; Database=" + dataXL + "; Port=3306; User = ami; Password = protnc"); //charSet = utf8"
-                connection.Open();
-                if (connection.State == System.Data.ConnectionState.Open)
-                {
-                    TableALL();
-                    MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                    DataTable sqlbaseTable = new DataTable();
-                    adapter.Fill(sqlbaseTable);
-                    sqlbaseTable.Columns.Add("STT");
-                    sqlbaseTable.Columns["STT"].SetOrdinal(0);
-                    int ixb = 1;
-                    foreach (DataRow rowxa in sqlbaseTable.Rows)
+                   
+                    string LaneX = Item.Substring(4, 1);
+                    string LineCGPlus = $"{Line}_{LaneX}";
+                    if (LaneX == "A")
                     {
-                        rowxa["STT"] = ixb++;
+                        
+                        DataTable DatataleA = cgaoiplus.Plus_cgaoi(Machine, LineCGPlus, TimerST, TimerEN);
+                        table2.ItemsSource = DatataleA.DefaultView;
+                        DataTable DataORGA = cgaoiplus.Plus_CGA(Machine, LineCGPlus, DataLimit, TimerST,TimerEN,Judge,Defection);
+                        tablebase.ItemsSource = DataORGA.DefaultView;
+                        CaculatorCGPlusA(DataORGA);
                     }
-                    if (Lane == "A")
+                    else if (LaneX == "B")
                     {
-                        CaculatorCGPlusA(sqlbaseTable);
-                        Lane_A_CG.ItemsSource = sqlbaseTable.DefaultView;
+                        DataTable DatataleB = cgaoiplus.Plus_cgaoiB(Machine, LineCGPlus, TimerST, TimerEN);
+                        TableB.ItemsSource = DatataleB.DefaultView;
+                        DataTable DataORGB = cgaoiplus.Plus_CGB(Machine, LineCGPlus, DataLimit, TimerST, TimerEN, Judge, Defection);
+                        Lane_B_CG.ItemsSource = DataORGB.DefaultView;
+                        CaculatorCGPlusB(DataORGB);
+                        Catital();
                     }
-                    else if (Lane == "B")
-                    {
-                        CaculatorCGPlusB(sqlbaseTable);
-                        Lane_B_CG.ItemsSource = sqlbaseTable.DefaultView;
-                    }
-                    CGplustableA(Lane);
-                    Catital();
-                    sqlbaseTable.Dispose();
-                }
-                connection.Close();
-                return;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: Step BY1 CONNECTION FAIL " + ex);
-                connection.Close();
-                return;
-            }
-        }
-        private void CaculatorCGPlusA(DataTable table)
-        {
-            ClearData();
-            int countNG = 0;
-            int countOK = 0;
-            int countNA = 0;
-            int totalRows = table.Rows.Count;
-            /// CP AOI Improvement
-            foreach (DataRow row in table.Rows)
-            {
-                if (row["judge"].ToString() == "NG")
-                {
-                    countNG++;
-                }
-                else if (row["judge"].ToString() == "OK")
-                {
-                    countOK++;
-                }
-                else if (row["judge"].ToString() != "NG" && row["judge"].ToString() != "OK")
-                {
-                    countNA++;
                 }
             }
-            TotalOKA.Content = countOK.ToString();
-            TotalNGA.Content = countNG.ToString();
-            TotalNAA.Content = countNA.ToString();
-            TotalAAA.Content = totalRows.ToString();
-            AA_A = float.Parse(TotalAAA.Content.ToString());
-            A_OK = float.Parse(TotalOKA.Content.ToString());
-            A_NG = float.Parse(TotalNGA.Content.ToString());
-            A_NA = float.Parse(TotalNAA.Content.ToString());
-
-            float YRTOK_A = (A_OK / AA_A) * 100;
-            YRTOKA.Content = YRTOK_A.ToString("#.#") + "%";
-            float YRTNG_A = (A_NG / AA_A) * 100;
-            YRTNGA.Content = YRTNG_A.ToString("#.#") + "%";
-            float YRTNA_A = (A_NA / AA_A) * 100;
-            YRTNAA.Content = YRTNA_A.ToString("#.#") + "%";
-        }
-        float BB_B;
-        float B_OK;
-        float B_NG;
-        float B_NA;
-        private void CaculatorCGPlusB(DataTable table)
-        {
-            int countNG = 0;
-            int countOK = 0;
-            int countNA = 0;
-            int totalRows = table.Rows.Count;
-            /// CP AOI Improvement
-            foreach (DataRow row in table.Rows)
-            {
-                if (row["judge"].ToString() == "NG")
-                {
-                    countNG++;
-                }
-                else if (row["judge"].ToString() == "OK")
-                {
-                    countOK++;
-                }
-                else if (row["judge"].ToString() != "NG" && row["judge"].ToString() != "OK")
-                {
-                    countNA++;
-                }
-            }
-
-            TotalOKB.Content = countOK.ToString();
-            TotalNGB.Content = countNG.ToString();
-            TotalNAB.Content = countNA.ToString();
-            TotalBBB.Content = totalRows.ToString();
-            BB_B = float.Parse(TotalBBB.Content.ToString());
-             B_OK = float.Parse(TotalOKB.Content.ToString());
-             B_NG = float.Parse(TotalNGB.Content.ToString());
-             B_NA = float.Parse(TotalNAB.Content.ToString());
-
-            float YRTOK_B = (B_OK / BB_B) * 100;
-            YRTOKB.Content = YRTOK_B.ToString("#.#") + "%";
-            float YRTNG_B = (B_NG / BB_B) * 100;
-            YRTNGB.Content = YRTNG_B.ToString("#.#") + "%";
-            float YRTNA_B = (B_NA / BB_B) * 100;
-            YRTNAB.Content = YRTNA_B.ToString("#.#") + "%";
-        }
-        float AA_A;
-        float A_OK;
-        float A_NG;
-        float A_NA;
-
-        private void Catital()
-        {
-
-            float TotalALL_AB = AA_A + BB_B;
-            float NGALLAB = A_NG + B_NG;
-            float NAALLAB = A_NA + B_NA;
-            float OKALLAB = A_OK + B_OK;
-
-            TotalALLAB.Content = TotalALL_AB;
-            TotalOKAB.Content = OKALLAB;
-            TotalNGAB.Content = NGALLAB;
-            TotalNAAB.Content = NAALLAB;
-
-            float YRTOK_AB = (OKALLAB / TotalALL_AB) * 100;
-            YRTALLOKAB.Content = YRTOK_AB.ToString("#.#") + "%";
-            float YRTNG_AB = (NGALLAB / TotalALL_AB) * 100;
-            YRTALLNGAB.Content = YRTNG_AB.ToString("#.#") + "%";
-            float YRTNA_AB = (NAALLAB / TotalALL_AB) * 100;
-            YRTALLNAAB.Content = YRTNA_AB.ToString("#.#") + "%";
-
+            adb.Close();
         }
         private void SeachID(object sender, RoutedEventArgs e)
         {
+            sqload = new SQLLoading();
             int length = BoxID.Text.Length;
-            if (BoxID.Text != string.Empty || length >=10)
-            {
-                CleardatatableGrid();
-                Showwindown();
-                if (MachineSelection.Text != "CG_AOI_Plus")
-                {
-                    try
-                    {
-                        string IDSeachcheck = BoxID.Text;
-                        ConnectionSQL();
-                        connection.Open();
-                        if (connection.State == System.Data.ConnectionState.Open)
-                        {
-                            if (IDSeachcheck.IndexOf(' ') > 1 || IDSeachcheck.IndexOf('\n') < 2)
-                            {
-                                // Seach panel ID thiếu hụt
-                                string IDSeach1 = "'" + BoxID.Text + "%'";
-                                string query = "SELECT * FROM product WHERE panelid LIKE " + IDSeach1;
-                                MySqlCommand cmd = new MySqlCommand(query, connection);
-                                MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                                DataTable dt = new DataTable();
-                                adapter.Fill(dt);
-                                tablebase.ItemsSource = dt.DefaultView;
-                                adb.Close();
-                                connection.Close();
-                            }
-                            else
-                            {
-                                /// Seach Nhiều panel ID
-                                string output = BoxID.Text;
-                                if (output.Contains("\r") || output.Contains("\n"))
-                                {
-                                    output = output.Replace("\r", "").Replace("\n", "','");
-                                }
-                                if (output.EndsWith("','"))
-                                {
-                                    output = output.Substring(0, output.Length - 3);
-                                }
-                                string query = "SELECT * FROM product WHERE panelid IN ('" + output + "')";
-                                MySqlCommand cmd = new MySqlCommand(query, connection);
-                                MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                                DataTable dt = new DataTable();
-                                adapter.Fill(dt);
-                                tablebase.ItemsSource = dt.DefaultView;
-                                adb.Close();
-                                connection.Close();
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        //  Bẫy lỗi và đưa thông báo lỗi vào messenger
-                        MessageBox.Show("Error: " + ex.ToString());
-                        adb.Close();
-                        connection.Close();
-                        return;
-                    }
+            string Machine = MachineSelection.Text;
+            string Line = LineSelection.Text;
+            string IDList = BoxID.Text;
+            CleardatatableGrid();
+            SeachDataCls seachDataCls = new SeachDataCls();
+            DataTable loadingdata = seachDataCls.LoadingData(Machine, length, Line,seachpanel ,IDList);
+            datatable = loadingdata;
+            tablebase.ItemsSource = loadingdata.DefaultView;
 
-                }
-            }
-            else
-            {
-                MessageBox.Show("Input Data >13 length");
-                return;
-            }
 
         }
+        DataTable datatable;
         public void Caculator(DataTable table)
         {
             ClearData();
@@ -843,218 +608,185 @@ namespace Auto_Cls_Data
             adb.Left = 850;
             adb.Top = 300;
             adb.Show();
-
-        }
-        private void ShowSubForm()
-        {
-            thread5 = new Thread(ShowSubForm);
-            thread5.SetApartmentState(ApartmentState.STA);
-            thread5.IsBackground = true;
-            thread5.Start();
-
-            adb = new Window1();
-            adb.Left = 850;
-            adb.Top = 300;
-            adb.Show();
-
-
-            //Dispatcher.Run();
-            //Nói rằng đây là một Window độc lập/*
-            System.Windows.Threading.Dispatcher.Run();
-        }
-        private void ClearData()
-        {
-            // Xóa dữ liệu trước khi chạy
-            int zero = 0;
-            TotalOKA.Content = zero.ToString();
-            TotalNGA.Content = zero.ToString();
-            TotalNAA.Content = zero.ToString();
-            TotalOKB.Content = zero.ToString();
-            TotalNGB.Content = zero.ToString();
-            TotalNAB.Content = zero.ToString();
-            TotalAAA.Content = zero.ToString();
-            TotalBBB.Content = zero.ToString();
-            TotalNGAB.Content = zero.ToString();
-            TotalOKAB.Content = zero.ToString();
-            TotalNAAB.Content = zero.ToString();
-            TotalALLAB.Content = zero.ToString();
-            YRTALLOKAB.Content = zero.ToString();
-            YRTALLNGAB.Content = zero.ToString();
-            YRTALLNAAB.Content = zero.ToString();
-            YRTOKA.Content = zero.ToString();
-            YRTNGA.Content = zero.ToString();
-            YRTNAA.Content = zero.ToString();
-            YRTOKB.Content = zero.ToString();
-            YRTNGB.Content = zero.ToString();
-            YRTNAB.Content = zero.ToString();
-
-        }
-        private void CleardatatableGrid()
-        {
-           tablebase.ItemsSource = null;
-            tablebase.Items.Clear();
-            table2.ItemsSource = null;
-            table2.Items.Clear();
-            tabledt.ItemsSource = null;
-            tabledt.Items.Clear();
-            TableB.ItemsSource = null;
-            TableB.Items.Clear();
-            tableidpanel.ItemsSource = null;
-            tableidpanel.Items.Clear();
-            
-        }
-        
-        private void ConnectionSQL()
-        {
-            IP_Class ipcls = new IP_Class();
-            ipcls.IP_Selx(MachineSelection.Text,LineSelection.Text);
-            ip_selc = ipcls.Ip_in;
-            dataXL = ipcls.Data_Basexx;
-            connection = new MySqlConnection("Server=" + ip_selc + "; Database=" + dataXL + "; Port=3306; User = ami; Password = protnc"); //charSet = utf8"
-            
         }
         private void copydatatoclipboard(object sender, RoutedEventArgs e)
-        {
-            Showwindown();
-            try
+         {
+            if (datatable == null)
             {
-                ConnectionSQL();
-                connection.Open();
-                if (connection.State == System.Data.ConnectionState.Open)
-                {
-                    TableALL();
-                    MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                    DataTable sqlbaseTable = new DataTable();
-                    adapter.Fill(sqlbaseTable);
-                    DataObject dataObject = new DataObject();
-                    dataObject.SetData(DataFormats.UnicodeText, GetClipboardText(sqlbaseTable));
-                    Clipboard.SetDataObject(dataObject, true);
-                }
-                adb.Close();
+                return;
+            }
+            DataObject dataObject = new DataObject();
+            dataObject.SetData(DataFormats.UnicodeText, GetClipboardText(datatable));
+            Clipboard.SetDataObject(dataObject, true);
 
-
-            }
-            catch (MySql.Data.MySqlClient.MySqlException ex)
-            {
-                MessageBox.Show("Error: " + ex.Message);
-                connection.Close();
-            }
         }
-        private string GetClipboardText(DataTable sqlbaseTable)
-        {
-            StringBuilder sb = new StringBuilder();
-            // Lấy tên các cột
-            IEnumerable<string> columnNames = sqlbaseTable.Columns.Cast<DataColumn>().Select(column => column.ColumnName);
-            sb.AppendLine(string.Join("\t", columnNames));
-            // Lấy giá trị các dòng
-            foreach (DataRow row in sqlbaseTable.Rows)
-            {
-                IEnumerable<string> fields = row.ItemArray.Select(field => field.ToString());
-                sb.AppendLine(string.Join("\t", fields));
-            }
-            return sb.ToString();
-        }
+         private string GetClipboardText(DataTable sqlbaseTable)
+         {
+             StringBuilder sb = new StringBuilder();
+             // Lấy tên các cột
+             IEnumerable<string> columnNames = sqlbaseTable.Columns.Cast<DataColumn>().Select(column => column.ColumnName);
+             sb.AppendLine(string.Join("\t", columnNames));
+             // Lấy giá trị các dòng
+             foreach (DataRow row in sqlbaseTable.Rows)
+             {
+                 IEnumerable<string> fields = row.ItemArray.Select(field => field.ToString());
+                 sb.AppendLine(string.Join("\t", fields));
+             }
+             return sb.ToString();
+         }
         private void tablebase_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            // if (Line_Sel.Text == "IS_AOI" || Line_Sel.Text == "CP_AOI")
-            // {
-           
-
-            /*if (dataselect == true)
-            {
-                DateTime pt_datetime = new DateTime(dataptdatetime);
-               // string pt_datetime = dataptdatetime;
-                MessageBox.Show(pt_datetime);
-                *//*try
-                {
-                    Connection();
-                    string query = "SELECT * FROM defect WHERE pt_datetime = @pt_datetime";
-                    DataTable datastring = new DataTable();
-                    using (MySqlCommand command = new MySqlCommand(query, connection))
-                    {
-                        //command.Parameters.AddWithValue("@iddefect", iddefect);
-                        command.Parameters.AddWithValue("@pt_datetime", pt_datetime);
-
-                        using (MySqlDataAdapter adapter = new MySqlDataAdapter(command))
-                        {
-                            adapter.Fill(datastring);
-                            byte[] raw = (byte[])datastring.Rows[0]["feature"];
-                            string text = Encoding.UTF8.GetString(raw);
-                            MessageBox.Show(text);
-
-                            tableyrt.ItemsSource = datastring.DefaultView;
-
-                            connection.Close();
-                            dataselect = false;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error: " + ex.Message);
-                    Window1.Close();
-                    connection.Close();
-                }*//*
-            }*/
-
+            
         }
-        //private bool dataselect;
         private void tablebase_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
         {
-            if (tablebase.SelectedCells != null && tablebase.SelectedCells.Count > 0)
-            {
-                // dataselect = true;
-                DataGridCellInfo cellInfo = tablebase.SelectedCells[1];
-                object data = cellInfo.Item;
-                DataRowView rowXY = data as DataRowView;
-                dataptdatetime = rowXY["pt_datetime"].ToString();
-            }
+           
 
         }
+        #region CGByLoading
+        private void CaculatorCGPlusA(DataTable table)
+        {
+            ClearData();
+            int countNG = 0;
+            int countOK = 0;
+            int countNA = 0;
+            int totalRows = table.Rows.Count;
+            /// CP AOI Improvement
+            foreach (DataRow row in table.Rows)
+            {
+                if (row["judge"].ToString() == "NG")
+                {
+                    countNG++;
+                }
+                else if (row["judge"].ToString() == "OK")
+                {
+                    countOK++;
+                }
+                else if (row["judge"].ToString() != "NG" && row["judge"].ToString() != "OK")
+                {
+                    countNA++;
+                }
+            }
+            TotalOKA.Content = countOK.ToString();
+            TotalNGA.Content = countNG.ToString();
+            TotalNAA.Content = countNA.ToString();
+            TotalAAA.Content = totalRows.ToString();
+            AA_A = float.Parse(TotalAAA.Content.ToString());
+            A_OK = float.Parse(TotalOKA.Content.ToString());
+            A_NG = float.Parse(TotalNGA.Content.ToString());
+            A_NA = float.Parse(TotalNAA.Content.ToString());
 
-        private string ip_selc;
-        private string Machinex;
-        private string Line;
-        private string dataptdatetime;
+            float YRTOK_A = (A_OK / AA_A) * 100;
+            YRTOKA.Content = YRTOK_A.ToString("#.#") + "%";
+            float YRTNG_A = (A_NG / AA_A) * 100;
+            YRTNGA.Content = YRTNG_A.ToString("#.#") + "%";
+            float YRTNA_A = (A_NA / AA_A) * 100;
+            YRTNAA.Content = YRTNA_A.ToString("#.#") + "%";
+        }
+        float BB_B;
+        float B_OK;
+        float B_NG;
+        float B_NA;
+        private void CaculatorCGPlusB(DataTable table)
+        {
+            int countNG = 0;
+            int countOK = 0;
+            int countNA = 0;
+            int totalRows = table.Rows.Count;
+            /// CP AOI Improvement
+            foreach (DataRow row in table.Rows)
+            {
+                if (row["judge"].ToString() == "NG")
+                {
+                    countNG++;
+                }
+                else if (row["judge"].ToString() == "OK")
+                {
+                    countOK++;
+                }
+                else if (row["judge"].ToString() != "NG" && row["judge"].ToString() != "OK")
+                {
+                    countNA++;
+                }
+            }
+
+            TotalOKB.Content = countOK.ToString();
+            TotalNGB.Content = countNG.ToString();
+            TotalNAB.Content = countNA.ToString();
+            TotalBBB.Content = totalRows.ToString();
+            BB_B = float.Parse(TotalBBB.Content.ToString());
+            B_OK = float.Parse(TotalOKB.Content.ToString());
+            B_NG = float.Parse(TotalNGB.Content.ToString());
+            B_NA = float.Parse(TotalNAB.Content.ToString());
+
+            float YRTOK_B = (B_OK / BB_B) * 100;
+            YRTOKB.Content = YRTOK_B.ToString("#.#") + "%";
+            float YRTNG_B = (B_NG / BB_B) * 100;
+            YRTNGB.Content = YRTNG_B.ToString("#.#") + "%";
+            float YRTNA_B = (B_NA / BB_B) * 100;
+            YRTNAB.Content = YRTNA_B.ToString("#.#") + "%";
+        }
+        float AA_A;
+        float A_OK;
+        float A_NG;
+        float A_NA;
+        private void Catital()
+        {
+
+            float TotalALL_AB = AA_A + BB_B;
+            float NGALLAB = A_NG + B_NG;
+            float NAALLAB = A_NA + B_NA;
+            float OKALLAB = A_OK + B_OK;
+
+            TotalALLAB.Content = TotalALL_AB;
+            TotalOKAB.Content = OKALLAB;
+            TotalNGAB.Content = NGALLAB;
+            TotalNAAB.Content = NAALLAB;
+
+            float YRTOK_AB = (OKALLAB / TotalALL_AB) * 100;
+            YRTALLOKAB.Content = YRTOK_AB.ToString("#.#") + "%";
+            float YRTNG_AB = (NGALLAB / TotalALL_AB) * 100;
+            YRTALLNGAB.Content = YRTNG_AB.ToString("#.#") + "%";
+            float YRTNA_AB = (NAALLAB / TotalALL_AB) * 100;
+            YRTALLNAAB.Content = YRTNA_AB.ToString("#.#") + "%";
+        }
+        #endregion
         private Window1 adb;
         public DataTable sqlbaseTable;
         public MySqlConnection connection;
         private MySqlCommand cmd;
-        string ip_in;
-        string dataXL;
         private Thread thread5;
         private List<string> IPMachine_CGPlus = new List<string>();
+        #region TableShow and Hide
         private void TableB_SelectedCellsChanged_1(object sender, SelectedCellsChangedEventArgs e)
         {
             string A = "B";
             string Line = LineSelection.Text;
             string LineSelec = $"{Line}_{A}";
-            
+            string TimerST = Time_ST.Text;
+            string TimerEN = Time_EN.Text;
+
             if (TableB.SelectedCells != null && TableB.SelectedCells.Count > 0)
             {
-                // Lấy giá trị ô được chọn
                 DataGridCellInfo cellInfo = TableB.SelectedCells[1];
                 object data = cellInfo.Item;
                 DataRowView rowXY = data as DataRowView; // Ép kiểu sang DataRowView nếu cần thiết
                 string name_seach = rowXY["priority_defect_name"].ToString();
-                Machinex = MachineSelection.Text;
-                Line = LineSelection.Text;
-                IP_Class iP_Class = new IP_Class();
-                iP_Class.IP_Selx(Machinex, LineSelec);
-                ip_selc = iP_Class.Ip_in;
-                dataXL = iP_Class.Data_Basexx;
+                string Machinex = MachineSelection.Text;
+                newloading = new NewLoading();
+                sqload = new SQLLoading();
+                string Connect = sqload.DBShow(Machinex, LineSelec);
                 try
                 {
-                    connection = new MySqlConnection("Server=" + ip_selc + "; Database=" + dataXL + "; Port=3306; User = ami; Password = protnc"); //charSet = utf8"
+                    connection = new MySqlConnection(Connect); //charSet = utf8"
                     connection.Open();
                     if (connection.State == System.Data.ConnectionState.Open)
                     {
-                        string query = "SELECT priority_defect_name, priority_grid_pos, COUNT(*) AS CountPos FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND priority_defect_name = '" + name_seach + "'GROUP BY priority_defect_name,priority_grid_pos ";
-                        string IDpanel = "SELECT priority_defect_name,priority_grid_pos,panelid FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND priority_defect_name = '" + name_seach + "' ";
+
+                        string query = newloading.TableBselection(TimerST, TimerEN,name_seach);
                         MySqlCommand command = new MySqlCommand(query, connection);
                         MySqlDataAdapter adapter = new MySqlDataAdapter(command);
                         DataTable loadingmapping = new DataTable();
-                        DataTable loadingidpanel = new DataTable();
                         adapter.Fill(loadingmapping);
 
                         loadingmapping.Columns.Add("STT");
@@ -1067,19 +799,7 @@ namespace Auto_Cls_Data
 
                         tabledt.ItemsSource = loadingmapping.DefaultView;
                         //
-                        MySqlCommand command2 = new MySqlCommand(IDpanel, connection);
-                        MySqlDataAdapter adapter2 = new MySqlDataAdapter(command2);
-                        adapter2.Fill(loadingidpanel);
-                        loadingidpanel.Columns.Add("STT");
-                        loadingidpanel.Columns["STT"].SetOrdinal(0);
-                        int ixa = 1;
-                        foreach (DataRow row in loadingidpanel.Rows)
-                        {
-                            row["STT"] = ixa++;
-                        }
-                        tableidpanel.ItemsSource = loadingidpanel.DefaultView;
                     }
-                    
                     connection.Close();
                     return;
                 }
@@ -1094,286 +814,72 @@ namespace Auto_Cls_Data
         }
         private void table2_SelectedCellsChanged_1(object sender, SelectedCellsChangedEventArgs e)
         {
-            
+            string Machine = MachineSelection.Text;
+            string Line = LineSelection.Text;
+            string CG_Plus_LineSelec = $"{Line}_A";
+            string TimerST = Time_ST.Text;
+            string TimerEN = Time_EN.Text;
 
-            if (MachineSelection.Text == "CG_AOI_Plus")
+            newloading = new NewLoading();
+            sqload = new SQLLoading();
+            if (table2.SelectedCells != null && table2.SelectedCells.Count > 0)
             {
-                string A = "A";
-                string Line = LineSelection.Text;
-                string LineSelec = $"{Line}_{A}";
-                if (table2.SelectedCells != null && table2.SelectedCells.Count > 0)
+                DataGridCellInfo cellInfo = table2.SelectedCells[1];
+                object data = cellInfo.Item;
+                DataRowView rowXY = data as DataRowView; // Ép kiểu sang DataRowView nếu cần thiết
+                string name_seach;
+                if (Machine == "Assy_AMI")
                 {
-                    // Lấy giá trị ô được chọn
-                    DataGridCellInfo cellInfo = table2.SelectedCells[1];
-                    object data = cellInfo.Item;
-                    DataRowView rowXY = data as DataRowView; // Ép kiểu sang DataRowView nếu cần thiết
-                    string name_seach = rowXY["priority_defect_name"].ToString();
-                    Machinex = MachineSelection.Text;
-                    //Line = LineSelection.Text;
-                    IP_Class iP_Class = new IP_Class();
-                    iP_Class.IP_Selx(Machinex, LineSelec);
-                    ip_selc = iP_Class.Ip_in;
-                    dataXL = iP_Class.Data_Basexx;
-                    try
+                    name_seach = rowXY["final_defect_name"].ToString();
+                }
+                else
+                {
+                    name_seach = rowXY["priority_defect_name"].ToString();
+                }
+                try
+                {
+                    string Connect;
+                    if (Machine == "CG_AOI_Plus")
                     {
-                        connection = new MySqlConnection("Server=" + ip_selc + "; Database=" + dataXL + "; Port=3306; User = ami; Password = protnc"); //charSet = utf8"
-
-                        connection.Open();
-                        if (connection.State == System.Data.ConnectionState.Open)
+                        Connect = sqload.DBShow(Machine, CG_Plus_LineSelec);
+                    }
+                    else
+                    {
+                        Connect = sqload.DBShow(Machine, Line);
+                    }
+                    connection = new MySqlConnection(Connect);
+                    connection.Open();
+                    if (connection.State == System.Data.ConnectionState.Open)
+                    {
+                        string query = newloading.SelectionTable(TimerST, TimerEN, name_seach,Machine);
+                        MySqlCommand command = new MySqlCommand(query, connection);
+                        MySqlDataAdapter adapter = new MySqlDataAdapter(command);
+                        DataTable loadingmapping = new DataTable();
+                        adapter.Fill(loadingmapping);
+                        loadingmapping.Columns.Add("STT");
+                        loadingmapping.Columns["STT"].SetOrdinal(0);
+                        int ixb = 1;
+                        foreach (DataRow rowxa in loadingmapping.Rows)
                         {
-                            string query = "SELECT priority_defect_name, priority_grid_pos, COUNT(*) AS CountPos FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND priority_defect_name = '" + name_seach + "'GROUP BY priority_defect_name,priority_grid_pos ";
-                            string IDpanel = "SELECT priority_defect_name,priority_grid_pos,panelid,pt_datetime FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND priority_defect_name = '" + name_seach + "' ";
-                            MySqlCommand command = new MySqlCommand(query, connection);
-                            MySqlDataAdapter adapter = new MySqlDataAdapter(command);
-                            DataTable loadingmapping = new DataTable();
-                            DataTable loadingidpanel = new DataTable();
-                            adapter.Fill(loadingmapping);
-                            loadingmapping.Columns.Add("STT");
-                            loadingmapping.Columns["STT"].SetOrdinal(0);
-                            int ixb = 1;
-                            foreach (DataRow rowxa in loadingmapping.Rows)
-                            {
-                                rowxa["STT"] = ixb++;
-                            }
-
-                            tabledt.ItemsSource = loadingmapping.DefaultView;
-                            //
-                            MySqlCommand command2 = new MySqlCommand(IDpanel, connection);
-                            MySqlDataAdapter adapter2 = new MySqlDataAdapter(command2);
-                            adapter2.Fill(loadingidpanel);
-                            loadingidpanel.Columns.Add("STT");
-                            loadingidpanel.Columns["STT"].SetOrdinal(0);
-                            int ixa = 1;
-                            foreach (DataRow row in loadingidpanel.Rows)
-                            {
-                                row["STT"] = ixa++;
-                            }
-                            tableidpanel.ItemsSource = loadingidpanel.DefaultView;
-                            //
+                            rowxa["STT"] = ixb++;
                         }
-                        connection.Close();
-                        return;
+                        tabledt.ItemsSource = loadingmapping.DefaultView;
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error: Step BY1 CONNECTION FAIL " + ex);
-                        connection.Close();
-                        return;
-                    }
-
+                    connection.Close();
+                    return;
+                }
+                catch 
+                {
+                    MessageBox.Show("Error: Step BY1 CONNECTION FAIL ");
+                    connection.Close();
+                    return;
                 }
             }
-            else if (MachineSelection.Text == "LT_AMI")
-            {
-                if (table2.SelectedCells != null && table2.SelectedCells.Count > 0)
-                {
-                    // Lấy giá trị ô được chọn
-                    DataGridCellInfo cellInfo = table2.SelectedCells[1];
-                    object data = cellInfo.Item;
-                    DataRowView rowXY = data as DataRowView; // Ép kiểu sang DataRowView nếu cần thiết
-                    string name_seach = rowXY["priority_defect_name"].ToString();
-
-                    try
-                    {
-                        ConnectionSQL();
-                        connection.Open();
-                        if (connection.State == System.Data.ConnectionState.Open)
-                        {
-                            string query = "1";
-
-                            if (MachineSelection.Text == "LT_AMI")
-                            {
-                                query = "SELECT priority_defect_name, display_insp, COUNT(*) AS CountPos FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND priority_defect_name = '" + name_seach + "'GROUP BY priority_defect_name,display_insp ";
-
-                            }
-                            string IDpanel = "SELECT priority_defect_name,display_insp,pt_datetime,panelid FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND priority_defect_name = '" + name_seach + "' ";
-                            MySqlCommand command = new MySqlCommand(query, connection);
-                            MySqlDataAdapter adapter = new MySqlDataAdapter(command);
-                            DataTable loadingmapping = new DataTable();
-                            DataTable loadingidpanel = new DataTable();
-                            adapter.Fill(loadingmapping);
-                            loadingmapping.Columns.Add("STT");
-                            loadingmapping.Columns["STT"].SetOrdinal(0);
-                            int ixb = 1;
-                            foreach (DataRow rowxa in loadingmapping.Rows)
-                            {
-                                rowxa["STT"] = ixb++;
-                            }
-
-                            tabledt.ItemsSource = loadingmapping.DefaultView;
-                            //
-                            MySqlCommand command2 = new MySqlCommand(IDpanel, connection);
-                            MySqlDataAdapter adapter2 = new MySqlDataAdapter(command2);
-                            adapter2.Fill(loadingidpanel);
-                            loadingidpanel.Columns.Add("STT");
-                            loadingidpanel.Columns["STT"].SetOrdinal(0);
-                            int ixa = 1;
-                            foreach (DataRow row in loadingidpanel.Rows)
-                            {
-                                row["STT"] = ixa++;
-                            }
-                            tableidpanel.ItemsSource = loadingidpanel.DefaultView;
-                            //
-                        }
-                        connection.Close();
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error: ");
-                        connection.Close();
-                        return;
-                    }
-                }
-            }
-            else if (MachineSelection.Text == "Assy_AMI")
-            {
-                if (table2.SelectedCells != null && table2.SelectedCells.Count > 0)
-                {
-                    // Lấy giá trị ô được chọn
-                    DataGridCellInfo cellInfo = table2.SelectedCells[1];
-                    object data = cellInfo.Item;
-                    DataRowView rowXY = data as DataRowView; // Ép kiểu sang DataRowView nếu cần thiết
-                    string name_seach = rowXY["final_defect_name"].ToString();
-                    try
-                    {
-                        ConnectionSQL();
-                        connection.Open();
-                        if (connection.State == System.Data.ConnectionState.Open)
-                        {
-                            string IDpanel = "SELECT localid,panelid,short_serial_no,final_defect_name,stage_index,eqp_zone,channel_index,pt_datetime FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND final_defect_name = '" + name_seach + "' ";
-                            DataTable loadingidpanel = new DataTable();
-                            //
-                            MySqlCommand command2 = new MySqlCommand(IDpanel, connection);
-                            MySqlDataAdapter adapter2 = new MySqlDataAdapter(command2);
-                            adapter2.Fill(loadingidpanel);
-
-                            loadingidpanel.Columns.Add("STT");
-                            loadingidpanel.Columns["STT"].SetOrdinal(0);
-                            int ixa = 1;
-                            foreach (DataRow row in loadingidpanel.Rows)
-                            {
-                                row["STT"] = ixa++;
-                            }
-                            tabledt.ItemsSource = loadingidpanel.DefaultView;
-                            //
-                        }
-                        connection.Close();
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error: ");
-                        connection.Close();
-                        return;
-                    }
-                }
-            }
-            else if (MachineSelection.Text == "CG_AOI")
-            {
-                if (table2.SelectedCells != null && table2.SelectedCells.Count > 0)
-                {
-                    // Lấy giá trị ô được chọn
-                    DataGridCellInfo cellInfo = table2.SelectedCells[1];
-                    object data = cellInfo.Item;
-                    DataRowView rowXY = data as DataRowView; // Ép kiểu sang DataRowView nếu cần thiết
-                    string name_seach = rowXY["priority_defect_name"].ToString();
-                    try
-                    {
-                        ConnectionSQL();
-                        connection.Open();
-                        if (connection.State == System.Data.ConnectionState.Open)
-                        {
-                            string query = "SELECT priority_defect_name, priority_grid_pos, COUNT(*) AS CountPos FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND priority_defect_name = '" + name_seach + "'GROUP BY priority_defect_name,priority_grid_pos ";
-                            DataTable loadingidpanel = new DataTable();
-                            //
-                            MySqlCommand command2 = new MySqlCommand(query, connection);
-                            MySqlDataAdapter adapter2 = new MySqlDataAdapter(command2);
-                            adapter2.Fill(loadingidpanel);
-
-                            loadingidpanel.Columns.Add("STT");
-                            loadingidpanel.Columns["STT"].SetOrdinal(0);
-                            int ixa = 1;
-                            foreach (DataRow row in loadingidpanel.Rows)
-                            {
-                                row["STT"] = ixa++;
-                            }
-                            tabledt.ItemsSource = loadingidpanel.DefaultView;
-
-                            string IDpanel = "SELECT priority_defect_name,panelid,pt_datetime FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND priority_defect_name = '" + name_seach + "' ";
-                            
-                            DataTable outputtable = new DataTable();
-                            //
-                            MySqlCommand command = new MySqlCommand(IDpanel, connection);
-                            MySqlDataAdapter adapter = new MySqlDataAdapter(command);
-                            adapter.Fill(outputtable);
-                            outputtable.Columns.Add("STT");
-                            outputtable.Columns["STT"].SetOrdinal(0);
-                            int ixX = 1;
-                            foreach (DataRow row in outputtable.Rows)
-                            {
-                                row["STT"] = ixX++;
-                            }
-                            tableidpanel.ItemsSource = outputtable.DefaultView;
-
-                            //
-                        }
-                        connection.Close();
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error: ");
-                        connection.Close();
-                        return;
-                    }
-                }
-            }
-            else
-            {
-                if (table2.SelectedCells != null && table2.SelectedCells.Count > 0)
-                {
-                    // Lấy giá trị ô được chọn
-                    DataGridCellInfo cellInfo = table2.SelectedCells[1];
-                    object data = cellInfo.Item;
-                    DataRowView rowXY = data as DataRowView; // Ép kiểu sang DataRowView nếu cần thiết
-                    string name_seach = rowXY["priority_defect_name"].ToString();
-                    try
-                    {
-                        ConnectionSQL();
-                        connection.Open();
-                        if (connection.State == System.Data.ConnectionState.Open)
-                        {
-                            string IDpanel = "SELECT priority_defect_name,panelid,pt_datetime FROM product WHERE pt_datetime >= '" + Time_ST.Text + "' AND pt_datetime <= '" + Time_EN.Text + "' AND priority_defect_name = '" + name_seach + "' ";
-                            DataTable loadingidpanel = new DataTable();
-                            //
-                            MySqlCommand command2 = new MySqlCommand(IDpanel, connection);
-                            MySqlDataAdapter adapter2 = new MySqlDataAdapter(command2);
-                            adapter2.Fill(loadingidpanel);
-                            loadingidpanel.Columns.Add("STT");
-                            loadingidpanel.Columns["STT"].SetOrdinal(0);
-                            int ixa = 1;
-                            foreach (DataRow row in loadingidpanel.Rows)
-                            {
-                                row["STT"] = ixa++;
-                            }
-                            tableidpanel.ItemsSource = loadingidpanel.DefaultView;
-                            //
-                        }
-                        connection.Close();
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error: ");
-                        connection.Close();
-                        return;
-                    }
-                }
-            }
-            ///                            
-
+           
         }
+
+        bool seachpanel = false;
+        #region
         private void Judgeslection_DropDownClosed(object sender, EventArgs e)
         {
             defectselection.IsEnabled = false;
@@ -1535,7 +1041,6 @@ namespace Auto_Cls_Data
             Judgeslection.IsEnabled = false;
             defectselection.IsEnabled = false;
             buttonstart.IsEnabled = false;
-
             LineSelection.Opacity = 0.5;
             Time_ST.Opacity = 0.5;
             Time_EN.Opacity = 0.5;
@@ -1543,32 +1048,29 @@ namespace Auto_Cls_Data
             defectselection.Opacity = 0.5;
             buttonstart.Opacity = 0.5;
 
-
             if (MachineSelection.Text != string.Empty)
             {
                 LineSelection.Opacity = 1;
                 LineSelection.IsEnabled = true;
-            }
-            
+            } 
             Defectloading();
             LaneALTAMI.Content = "Lane A";
             LaneBLTAMI.Content = "Lane B";
-
             tablebase.Visibility = Visibility.Collapsed;
-            Lane_A_CG.Visibility = Visibility.Collapsed;
-            Lane_B_CG.Visibility = Visibility.Collapsed;
             Mapping_CGAOI.Visibility = Visibility.Collapsed;
             TableB.Visibility = Visibility.Collapsed;
             table2.Visibility = Visibility.Collapsed;
             Name_laneB.Visibility = Visibility.Collapsed;
             Name_laneA.Visibility = Visibility.Collapsed;
             Buttoncopyclipboard.Visibility = Visibility.Visible;
-            tableIDpanel.Visibility = Visibility.Visible;
-            tableIDpanel.Margin = new Thickness(463, 59, 684, 10);
+            Tabletotalpanel.Visibility = Visibility.Collapsed;
+
+            //tableIDpanel.Margin = new Thickness(463, 59, 684, 10);
             contentableidpanel.Content = "Table__Defect__ID__Mapping";
-            Mapping_CGAOI.Margin = new Thickness(854, 64, 0, 0);
             checkerdataintable.IsEnabled = true;
-            
+            // 0,10,10,53
+            tablebase.Margin = new Thickness(0, 10, 10, 53);
+            Lane_B_CG.Visibility = Visibility.Collapsed;
             //Table Loading
             CleardatatableGrid();
             switch (MachineSelection.Text)
@@ -1581,7 +1083,7 @@ namespace Auto_Cls_Data
                         Connten.Content = "CG__AOI Mapping ";
                         tablebase.Visibility = Visibility.Visible;
                         Mapping_CGAOI.Visibility = Visibility.Visible;
-                        tableIDpanel.Margin = new Thickness (463, 59, 550, 10);
+                        Tabletotalpanel.Margin = new Thickness (463, 59, 550, 10);
                         Mapping_CGAOI.Margin = new Thickness(1000, 64, 0, 0);
                         Mapping_CGAOI.Width = 400;
                         //Mapping_CGAOI.Margin = new Thickness(854, 64, 0, 0);
@@ -1596,8 +1098,11 @@ namespace Auto_Cls_Data
                 case "CP_AOI":
                     {
                         tablebase.Visibility = Visibility.Visible;
-                        Mapping_CGAOI.Visibility = Visibility.Collapsed;
+                        Mapping_CGAOI.Visibility = Visibility.Visible;
                         table2.Visibility = Visibility.Visible;
+                        Tabletotalpanel.Visibility = Visibility.Visible;
+                        Tabletotalpanel.Margin = new Thickness(440, 59, 500, 10);
+                        
                         string[] AddItemLineName = { "301", "302", "303", "304", "305", "306", "404", "406", "501", "502", "503", "504", "505", "506" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
@@ -1608,9 +1113,12 @@ namespace Auto_Cls_Data
                 case "IS_AOI":
                     {
                         tablebase.Visibility = Visibility.Visible;
-                        Mapping_CGAOI.Visibility = Visibility.Collapsed;
+                        Mapping_CGAOI.Visibility = Visibility.Visible;
                         table2.Visibility = Visibility.Visible;
                        
+                        tabledt.Visibility = Visibility.Visible;
+                        Tabletotalpanel.Visibility = Visibility.Visible;
+                        Tabletotalpanel.Margin = new Thickness(440, 59, 500, 10);
                         string[] AddItemLineName = { "301", "302", "303", "304", "305", "306", "402", "404", "405", "406", "501", "502", "503", "504", "505", "506" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
@@ -1624,6 +1132,9 @@ namespace Auto_Cls_Data
                         tablebase.Visibility = Visibility.Visible;
                         Mapping_CGAOI.Visibility = Visibility.Visible;
                         table2.Visibility = Visibility.Visible;
+                        tabledt.Visibility = Visibility.Visible;
+                        Tabletotalpanel.Visibility = Visibility.Visible;
+                        Tabletotalpanel.Margin = new Thickness(440, 59, 500, 10);
                         string[] AddItemLineName = { "406", "501", "502", "503", "504", "505", "506" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
@@ -1637,11 +1148,13 @@ namespace Auto_Cls_Data
                         Connten.Content = "Assy__AMI Stage ";
                         tablebase.Visibility = Visibility.Visible;
                         Mapping_CGAOI.Visibility = Visibility.Visible;
-                        tableIDpanel.Margin = new Thickness(440, 59, 500, 10);
+                        Tabletotalpanel.Visibility = Visibility.Visible;
+                        Tabletotalpanel.Margin = new Thickness(440, 59, 500, 10);
                         Mapping_CGAOI.Margin = new Thickness(1000, 64, 0, 0);
                         Mapping_CGAOI.Width = 465;
                         table2.Visibility = Visibility.Visible;
                         table2.Width = 410;
+                        tabledt.Visibility = Visibility.Visible;
                         string[] AddItemLineName = { "301" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
@@ -1655,7 +1168,7 @@ namespace Auto_Cls_Data
                         Connten.Content = "CG__AOI__Plus Mapping ";
                         contentableidpanel.Content = "CG__AOI__Plus__Defect__ID__Mapping";
                         //tablebase.Visibility = Visibility.Visible;
-                        Lane_A_CG.Visibility = Visibility.Visible;
+                        tablebase.Margin = new Thickness(0, 0, 770, 53);
                         Lane_B_CG.Visibility = Visibility.Visible;
                         table2.Visibility = Visibility.Visible;
                         table2.Width = 350;
@@ -1663,14 +1176,15 @@ namespace Auto_Cls_Data
                         TableB.Visibility = Visibility.Visible;
                         TableB.Width = 350;
                         TableB.Margin = new Thickness(300, 20, 654, 10);
-                        
-                        Mapping_CGAOI.Width = 275;
-                        Mapping_CGAOI.Margin = new Thickness(1200, 64, 0, 0);
-                        tableIDpanel.Margin = new Thickness(844, 59, 300, 10);
+                        Mapping_CGAOI.Width = 500;
+                        Mapping_CGAOI.Margin = new Thickness(800, 64, 0, 0);
+                        Tabletotalpanel.Visibility = Visibility.Collapsed;
+                        Buttoncopyclipboard.Visibility = Visibility.Collapsed;
                         Name_laneB.Visibility = Visibility.Visible;
                         Name_laneA.Visibility = Visibility.Visible;
                         Buttoncopyclipboard.Visibility = Visibility.Collapsed;
                         checkerdataintable.IsEnabled = false;
+
                         string[] AddItemLineName = { "303", "304", "305", "306", "401", "402", "403", "404", "405", "501", "502", "503", "504" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
@@ -1798,7 +1312,6 @@ namespace Auto_Cls_Data
                 }
             }
         }
-
         private void defectselection_DropDownClosed(object sender, EventArgs e)
         {
             if (defectselection.Text != string.Empty)
@@ -1807,77 +1320,74 @@ namespace Auto_Cls_Data
                 buttonstart.Opacity = 1;
             }
         }
-
-        private void SeachPIDID(object sender, RoutedEventArgs e)
+        #endregion
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
+            Seachserialno.IsChecked = false;
+            seachpanel = true;
+        }
+        private void CheckBox_Checked_1(object sender, RoutedEventArgs e)
+        {
+            Seachpanelid.IsChecked = false;
+            seachpanel = false;
 
-            int length = BoxPIDID.Text.Length;
-            if (BoxPIDID.Text != string.Empty || length >= 10)
+        }
+        bool DatashowTable = false;
+        private void checkerdataintable_Checked(object sender, RoutedEventArgs e)
+        {
+           
+            if(checkerdataintable.IsChecked == true)
             {
-                CleardatatableGrid();
-                Showwindown();
-                if (MachineSelection.Text != "CG_AOI_Plus")
-                {
-                    try
-                    {
-                        string IDSeachcheck = BoxPIDID.Text;
-                        ConnectionSQL();
-                        connection.Open();
-                        if (connection.State == System.Data.ConnectionState.Open)
-                        {
-                            if (IDSeachcheck.IndexOf(' ') > 1 || IDSeachcheck.IndexOf('\n') < 2)
-                            {
-                                // Seach panel ID thiếu hụt
-                                string IDSeach1 = "'" + BoxPIDID.Text + "%'";
-                                string query = "SELECT * FROM product WHERE short_serial_no LIKE " + IDSeach1;
-                                MySqlCommand cmd = new MySqlCommand(query, connection);
-                                MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                                DataTable dt = new DataTable();
-                                adapter.Fill(dt);
-                                tablebase.ItemsSource = dt.DefaultView;
-                                adb.Close();
-                                connection.Close();
-                            }
-                            else
-                            {
-                                /// Seach Nhiều panel ID
-                                string output = BoxPIDID.Text;
-                                if (output.Contains("\r") || output.Contains("\n"))
-                                {
-                                    output = output.Replace("\r", "").Replace("\n", "','");
-                                }
-                                if (output.EndsWith("','"))
-                                {
-                                    output = output.Substring(0, output.Length - 3);
-                                }
-                                string query = "SELECT * FROM product WHERE panelid IN ('" + output + "')";
-                                MySqlCommand cmd = new MySqlCommand(query, connection);
-                                MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                                DataTable dt = new DataTable();
-                                adapter.Fill(dt);
-                                tablebase.ItemsSource = dt.DefaultView;
-                                adb.Close();
-                                connection.Close();
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        //  Bẫy lỗi và đưa thông báo lỗi vào messenger
-                        MessageBox.Show("Error: " + ex.ToString());
-                        adb.Close();
-                        connection.Close();
-                        return;
-                    }
-
-                }
+                DatashowTable = true;
             }
             else
             {
-                MessageBox.Show("Input Data >13 length");
-                return;
+                DatashowTable = false;
             }
+        }
+        private void CleardatatableGrid()
+        {
+            tablebase.ItemsSource = null;
+            tablebase.Items.Clear();
+            table2.ItemsSource = null;
+            table2.Items.Clear();
+            tabledt.ItemsSource = null;
+            tabledt.Items.Clear();
+            TableB.ItemsSource = null;
+            TableB.Items.Clear();
+            tablepanel.ItemsSource = null;
+            tablepanel.Items.Clear();
 
         }
+        private void ClearData()
+        {
+            // Xóa dữ liệu trước khi chạy
+            int zero = 0;
+            TotalOKA.Content = zero.ToString();
+            TotalNGA.Content = zero.ToString();
+            TotalNAA.Content = zero.ToString();
+            TotalOKB.Content = zero.ToString();
+            TotalNGB.Content = zero.ToString();
+            TotalNAB.Content = zero.ToString();
+            TotalAAA.Content = zero.ToString();
+            TotalBBB.Content = zero.ToString();
+            TotalNGAB.Content = zero.ToString();
+            TotalOKAB.Content = zero.ToString();
+            TotalNAAB.Content = zero.ToString();
+            TotalALLAB.Content = zero.ToString();
+            YRTALLOKAB.Content = zero.ToString();
+            YRTALLNGAB.Content = zero.ToString();
+            YRTALLNAAB.Content = zero.ToString();
+            YRTOKA.Content = zero.ToString();
+            YRTNGA.Content = zero.ToString();
+            YRTNAA.Content = zero.ToString();
+            YRTOKB.Content = zero.ToString();
+            YRTNGB.Content = zero.ToString();
+            YRTNAB.Content = zero.ToString();
+
+        }
+        #endregion
+
+        
     }
 }

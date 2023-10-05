@@ -95,11 +95,13 @@
     <Compile Include="Data_Cal\Caculator.cs" />
     <Compile Include="Data_Cal\IP_Class.cs" />
     <Compile Include="Data_Cal\NewLoading.cs" />
+    <Compile Include="Data_Cal\SeachDataCls.cs" />
     <Compile Include="Data_Cal\SQLLoading.cs" />
     <Compile Include="Data_Cal\Tuktukdata.cs" />
     <Compile Include="Data_LD.xaml.cs">
       <DependentUpon>Data_LD.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Gplus\CGAOIPlus.cs" />
     <Compile Include="Seachdata.xaml.cs">
       <DependentUpon>Seachdata.xaml</DependentUpon>
     </Compile>
