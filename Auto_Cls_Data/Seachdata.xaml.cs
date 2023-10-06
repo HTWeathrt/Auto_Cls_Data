@@ -22,6 +22,7 @@ using System.Diagnostics.Eventing.Reader;
 using static System.Net.Mime.MediaTypeNames;
 using Auto_Cls_Data.Gplus;
 using System.Windows.Forms.VisualStyles;
+using static System.Windows.Forms.LinkLabel;
 
 namespace Auto_Cls_Data
 {
@@ -93,9 +94,7 @@ namespace Auto_Cls_Data
                 connection.Open();
                 if (connection.State == System.Data.ConnectionState.Open)
                 {
-                    
                     string sqlselection = newloading.TableDatabaseShow(TimerST, TimerEN, DataLimit, Judge, Defection);
-                    //
                     cmd = new MySqlCommand(sqlselection, connection);
                     //(string Machine , string Limited, string TimerST, string TimerEN)
                     if (Machine =="Assy_AMI" || Machine == "CP_AOI" || Machine =="LT_AMI")
@@ -107,11 +106,8 @@ namespace Auto_Cls_Data
                     adapter.Fill(sqlbaseTable);
                     sqlbaseTable.Columns.Add("STT");
                     sqlbaseTable.Columns["STT"].SetOrdinal(0);
-                    int ixb = 1;
-                    
+                    int ixb = 1;   
                     tabletileld(Machine, DataLimit, TimerST, TimerEN);
-
-
                     foreach (DataRow rowxa in sqlbaseTable.Rows)
                     {
                         rowxa["STT"] = ixb++;
@@ -122,7 +118,6 @@ namespace Auto_Cls_Data
                         tablebase.ItemsSource = sqlbaseTable.DefaultView;
                     }
                     sqlbaseTable.Dispose();
-                    
                 }
                 connection.Close();
                 return;
@@ -187,7 +182,6 @@ namespace Auto_Cls_Data
                     string LineCGPlus = $"{Line}_{LaneX}";
                     if (LaneX == "A")
                     {
-                        
                         DataTable DatataleA = cgaoiplus.Plus_cgaoi(Machine, LineCGPlus, TimerST, TimerEN);
                         table2.ItemsSource = DatataleA.DefaultView;
                         DataTable DataORGA = cgaoiplus.Plus_CGA(Machine, LineCGPlus, DataLimit, TimerST,TimerEN,Judge,Defection);
@@ -210,16 +204,33 @@ namespace Auto_Cls_Data
         private void SeachID(object sender, RoutedEventArgs e)
         {
             sqload = new SQLLoading();
+            SeachDataCls seachDataCls = new SeachDataCls();
+            DataTable dt = new DataTable();
             int length = BoxID.Text.Length;
             string Machine = MachineSelection.Text;
             string Line = LineSelection.Text;
             string IDList = BoxID.Text;
-            CleardatatableGrid();
-            SeachDataCls seachDataCls = new SeachDataCls();
-            DataTable loadingdata = seachDataCls.LoadingData(Machine, length, Line,seachpanel ,IDList);
-            datatable = loadingdata;
-            tablebase.ItemsSource = loadingdata.DefaultView;
-
+            string connector = sqload.DBShow(Machine, Line);
+            MySqlConnection connection = new MySqlConnection(connector);
+            connection.Open();
+            if (connection.State == System.Data.ConnectionState.Open)
+            {
+                CleardatatableGrid();
+                string loadingdata = seachDataCls.LoadingData(Machine, length, Line, seachpanel, IDList);
+                MySqlCommand cmd = new MySqlCommand(loadingdata, connection);
+                MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
+                adapter.Fill(dt);
+                dt.Columns.Add("STT");
+                dt.Columns["STT"].SetOrdinal(0);
+                int ixb = 1;
+                foreach (DataRow rowxa in dt.Rows)
+                {
+                    rowxa["STT"] = ixb++;
+                }
+                datatable = dt;
+                tablebase.ItemsSource = dt.DefaultView;
+            }
+           
 
         }
         DataTable datatable;
@@ -618,7 +629,6 @@ namespace Auto_Cls_Data
             DataObject dataObject = new DataObject();
             dataObject.SetData(DataFormats.UnicodeText, GetClipboardText(datatable));
             Clipboard.SetDataObject(dataObject, true);
-
         }
          private string GetClipboardText(DataTable sqlbaseTable)
          {
@@ -640,8 +650,6 @@ namespace Auto_Cls_Data
         }
         private void tablebase_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
         {
-           
-
         }
         #region CGByLoading
         private void CaculatorCGPlusA(DataTable table)
@@ -755,7 +763,6 @@ namespace Auto_Cls_Data
         public DataTable sqlbaseTable;
         public MySqlConnection connection;
         private MySqlCommand cmd;
-        private Thread thread5;
         private List<string> IPMachine_CGPlus = new List<string>();
         #region TableShow and Hide
         private void TableB_SelectedCellsChanged_1(object sender, SelectedCellsChangedEventArgs e)
@@ -1047,7 +1054,6 @@ namespace Auto_Cls_Data
             Judgeslection.Opacity = 0.5;
             defectselection.Opacity = 0.5;
             buttonstart.Opacity = 0.5;
-
             if (MachineSelection.Text != string.Empty)
             {
                 LineSelection.Opacity = 1;
@@ -1184,7 +1190,8 @@ namespace Auto_Cls_Data
                         Name_laneA.Visibility = Visibility.Visible;
                         Buttoncopyclipboard.Visibility = Visibility.Collapsed;
                         checkerdataintable.IsEnabled = false;
-
+                        tablebase.Visibility = Visibility.Visible;
+                        tablebase.Margin = new Thickness(0, 10, 743, 53);
                         string[] AddItemLineName = { "303", "304", "305", "306", "401", "402", "403", "404", "405", "501", "502", "503", "504" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
@@ -1320,7 +1327,7 @@ namespace Auto_Cls_Data
                 buttonstart.Opacity = 1;
             }
         }
-        #endregion
+        
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             Seachserialno.IsChecked = false;
@@ -1387,7 +1394,8 @@ namespace Auto_Cls_Data
 
         }
         #endregion
+        #endregion
 
-        
+
     }
 }

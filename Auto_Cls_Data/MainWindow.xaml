@@ -19,5 +19,8 @@
             <PasswordBox Grid.ColumnSpan="2" Margin="59,0,0,0" MaxLength="12" x:Name="pw_box" PasswordChar="*" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="16"/>
 
         </Grid>
+        <DockPanel LastChildFill="False" Margin="0,95,0,138" >
+            
+        </DockPanel>
     </Grid>
 </Window>

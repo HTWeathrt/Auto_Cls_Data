@@ -101,6 +101,7 @@
     <Compile Include="Data_LD.xaml.cs">
       <DependentUpon>Data_LD.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ExportData.cs" />
     <Compile Include="Gplus\CGAOIPlus.cs" />
     <Compile Include="Seachdata.xaml.cs">
       <DependentUpon>Seachdata.xaml</DependentUpon>
