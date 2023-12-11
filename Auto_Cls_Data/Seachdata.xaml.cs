@@ -23,25 +23,302 @@ using static System.Net.Mime.MediaTypeNames;
 using Auto_Cls_Data.Gplus;
 using System.Windows.Forms.VisualStyles;
 using static System.Windows.Forms.LinkLabel;
+using System.Windows.Forms;
+using System.Drawing;
+using DataObject = System.Windows.DataObject;
+using DataFormats = System.Windows.DataFormats;
+using Clipboard = System.Windows.Clipboard;
+using MessageBox = System.Windows.Forms.MessageBox;
+using Newtonsoft.Json;
+using Xceed.Wpf.Toolkit;
+using Application = System.Windows.Application;
+using Serilog;
+using System.Web.Hosting;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace Auto_Cls_Data
 {
+ 
     public partial class Seachdata : Window
     {
         NewLoading newloading;
         SQLLoading sqload;
         IP_Class iP_Class;
         CGAOIPlus cgaoiplus;
+        DataTable CG_PlusA;
+        DataTable CG_PlusB;
+        BackgroundWorker loading;
+        BackgroundWorker seachdd;
+        SeachDataVol2 seachexport;
         public Seachdata()
         {
             InitializeComponent();
-            lddatime();
+            
+            this.Loaded += lddatime;
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            Log.Logger = new LoggerConfiguration()
+                    .WriteTo.File($"Log\\log{timestamp}.txt")
+                    .CreateLogger();
+            this.Loaded += MainWindown_Loadi;
+            Seachpanelid.IsChecked = true;
+        }
+        
+        private void MainWindown_Loadi(object sender, RoutedEventArgs e)
+        {
+            loading = new BackgroundWorker();
+            loading.WorkerSupportsCancellation = true;
+            loading.DoWork += loading_DoWork;
+            loading.RunWorkerCompleted += loading_RunWorkerCompleted;
+            seachdd = new BackgroundWorker();
+            seachdd.WorkerSupportsCancellation = true;
+            seachdd.DoWork += seachdd_DoWork;
+            seachdd.RunWorkerCompleted += seachdd_RunWorkerCompleted;
+            string Filex = "config\\Prefence.json";
+            if (!File.Exists(Filex))
+            {
+                MessageBox.Show("No RecipeFile");
+                return;
+            }
+            string ADB = File.ReadAllText(Filex);
+            ALGOTech = JsonConvert.DeserializeObject<AlgorithmDLL>(ADB);
+
+
+
+            //string Fileprefence = "config\\Prefence.json";
+            /* string ADB = File.ReadAllText(Fileprefence);
+             Prefence prefence = JsonConvert.DeserializeObject< Prefence>( ADB );
+             this.Width = prefence.Monitor.Width;
+             this.Height = prefence.Monitor.Height;
+             this.MaxHeight = prefence.Monitor.Height;
+             this.MaxWidth = prefence.Monitor.Width;*/
+        }
+        AlgorithmDLL ALGOTech;
+        private void seachdd_DoWork(object sender, DoWorkEventArgs e)
+        {
+            sqload = new SQLLoading();
+            SeachDataCls seachDataCls = new SeachDataCls();
+
+            string Machine = string.Empty;
+            string Line = string.Empty;
+            string IDList = string.Empty;
+            int Length = 0;
+            bool seachpanelxx = false;
+            Dispatcher.Invoke(() =>
+            {
+                 Length = BoxID.Text.Length;
+                 Machine = MachineSelection.Text;
+                 Line = LineSelection.Text;
+                 IDList = BoxID.Text;
+                 seachpanelxx = seachpanel;
+            });
+            try
+            {
+                DataTable seachdata = seachexport.SeachData(Machine, Line, Length, IDList,seachpanelxx);
+                datatable = seachdata;
+                Dispatcher.Invoke(() =>
+                {
+                    if (seachdata != null && checkerdataintable.IsChecked == true)
+                    {
+                        tablebase.ItemsSource = seachdata.DefaultView;
+                    }
+                });
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("Error: " + ex);
+                Log.Error("Err: " + ex);
+                return;
+            }
+            
+        }
+        private void seachdd_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (MachineSelection.Text != "CG_AOI_Plus")
+            {
+                if (datatable != null) { Caculator(datatable); }
+            }
+            loadingwindown.Visibility = Visibility.Collapsed;
+        }
+        private void loading_DoWork(object sender , DoWorkEventArgs e)
+        {
+            string Machine = string.Empty;
+            string Line = string.Empty;
+            int DataLimit = 0;
+            string TimerST = string.Empty;
+            string TimerEN = string.Empty;
+            string Judge = string.Empty;
+            string Defection = string.Empty;
+            Dispatcher.Invoke(() =>
+            {
+                 Machine = MachineSelection.Text;
+                 Line = LineSelection.Text;
+                 DataLimit = Convert.ToInt32(data_limit_seach.Text);
+                 TimerST = Time_ST.Text;
+                 TimerEN = Time_EN.Text;
+                 Judge = Judgeslection.Text;
+                 Defection = defectselection.Text;
+                
+            });
+            if (Machine == string.Empty || Line == string.Empty || Judge == string.Empty)
+            {
+                MessageBox.Show("Pls Selection Data");
+                return;
+            }
+            /// UI Guid 
+            /// 
+            string Database = string.Empty;
+            string IP = string.Empty;
+            foreach(var item in ALGOTech.Databasex)
+            {
+                if(item.Machine == Machine)
+                {
+                    Database = item.Database;
+                }
+            }
+            foreach(var item in ALGOTech.DataAlgorithm)
+            {
+                if(item.Machine == Machine)
+                {
+                    foreach (var IPD in item.DataORG)
+                    {
+                        if(IPD.Name == Line)
+                        {
+                            IP = IPD.IP;
+                        }    
+                    }
+                }
+            }
+            string connectionx = $"Server={IP}; Database={Database};User = ami; Password = protnc";
+            
+            if (Machine != "CG_AOI_Plus" && IP != string.Empty)
+            {
+                sqload = new SQLLoading();
+                try
+                {
+                    DataTable base_table = seachexport.DataBaseQuery(connectionx, TimerST, TimerEN, DataLimit, Judge, Defection);
+                    DataTable yrt_table = seachexport.DataYRTQuery(connectionx,Machine, TimerST, TimerEN, DataLimit);
+                    Dispatcher.Invoke(() =>
+                    { 
+                        if(base_table != null && checkerdataintable.IsChecked == true) { tablebase.ItemsSource = base_table.DefaultView;}
+                        if (yrt_table != null) { table2.ItemsSource = yrt_table.DefaultView; }
+                    });
+                    datatable = base_table;
+                    var rsdatable = new List<DataTable> { base_table, yrt_table };
+                    if (Machine == "Assy_AMI" || Machine == "CP_AOI" || Machine == "LT_AMI")
+                    {
+                        DataTable datatb = seachexport.LDTable(Machine, Line, TimerST, TimerEN);
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (datatb != null ) { tablechanel.ItemsSource = datatb.DefaultView; }
+                        });
+                        datatb.Dispose();
+                    }
+                    base_table.Dispose();
+                    yrt_table.Dispose();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: " + ex);
+                    Log.Error("Err: "+ex);
+                    return;
+                }
+            }
+            else if(Machine == "CG_AOI_Plus")
+            {
+                Database = string.Empty;
+                foreach (var item in ALGOTech.Databasex)
+                {
+                    if (item.Machine == "CG_AOI")
+                    {
+                        Database = item.Database;
+                    }
+                }
+                foreach (string Item in IPMachine_CGPlus)
+                {
+                    string LaneX = Item.Substring(4, 1);
+                    string LineCGPlus = $"{Line}_{LaneX}";
+                    try
+                    {
+                        
+                        IP = string.Empty;
+                        foreach (var item in ALGOTech.DataAlgorithm)
+                        {
+                            if (item.Machine == "CG_AOI")
+                            {
+                                foreach (var IPD in item.DataORG)
+                                {
+                                    if (IPD.Name == LineCGPlus)
+                                    {
+                                        IP = IPD.IP;
+                                    }
+                                }
+                            }
+                        }
+                        connectionx = $"Server={IP}; Database={Database};User = ami; Password = protnc";
+                        if (LaneX == "A")
+                        {
+
+                            DataTable DatatableA = seachexport.CGAOIPLS(connectionx, LineCGPlus, TimerST, TimerEN, DataLimit);
+                            DataTable BaseTb = seachexport.CGAOIYRTPLUS(connectionx, LineCGPlus, TimerST, TimerEN, DataLimit, Judge, Defection);
+                            Dispatcher.Invoke(() =>
+                            {
+                                table2.ItemsSource = DatatableA.DefaultView;
+                                if (checkerdataintable.IsChecked == true)
+                                {
+                                    tablebase.ItemsSource = BaseTb.DefaultView;
+                                }
+                                // 
+                            });
+                            CG_PlusA = BaseTb;
+                        }
+                        else if (LaneX == "B")
+                        {
+                            DataTable DatatableA = seachexport.CGAOIPLS(connectionx, LineCGPlus, TimerST, TimerEN, DataLimit);
+                            DataTable BaseTb = seachexport.CGAOIYRTPLUS(connectionx, LineCGPlus, TimerST, TimerEN, DataLimit, Judge, Defection);
+                            Dispatcher.Invoke(() =>
+                            {
+                                TableB.ItemsSource = DatatableA.DefaultView;
+                                if (checkerdataintable.IsChecked == true)
+                                {
+                                    Lane_B_CG.ItemsSource = BaseTb.DefaultView;
+                                }
+                            });
+                            CG_PlusB = BaseTb;
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        MessageBox.Show("Error: " + ex);
+                        Log.Error("Err: " + ex);
+                        return;
+                    }
+                    
+                }
+            }
+        }
+        
+        private void loading_RunWorkerCompleted(object sender , RunWorkerCompletedEventArgs e)
+        {
+            if(MachineSelection.Text != "CG_AOI_Plus")
+            {
+                if(datatable != null) { Caculator(datatable); }
+            }
+            else
+            { if(CG_PlusA != null && CG_PlusB != null) 
+                {
+                    CaculatorCGPlusA(CG_PlusA);
+                    CaculatorCGPlusB(CG_PlusB);
+                    Catital();
+                }
+            }
+            loadingwindown.Visibility = Visibility.Collapsed;
         }
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             System.Windows.Forms.Application.Exit();
         }
-        private void lddatime()
+        private void lddatime(object sender ,RoutedEventArgs e)
         {
             Seachpanelid.IsChecked = false;
             Time_EN.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
@@ -54,186 +331,35 @@ namespace Auto_Cls_Data
         {
             Time_EN.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
         }
-        private void TableAssyAMI(string TimerST,string TimerEN,string Machine,string Line)
-        {
-            newloading = new NewLoading();
-            string SQLLD = "";
-            if (Machine == "Assy_AMI")
-            {
-                SQLLD = newloading.LoadAssyAMI(TimerST, TimerEN);
-            }
-            if(Machine =="CP_AOI")
-            {
-                SQLLD = newloading.LoadCPAOI(TimerST, TimerEN);
-            }
-            if(Machine == "LT_AMI")
-            {
-                SQLLD = newloading.LoadLTAMI(TimerST, TimerEN);
-            }
-            //
-            MySqlCommand SQLCommandloading = new MySqlCommand(SQLLD, connection);
-            MySqlDataAdapter adapter = new MySqlDataAdapter(SQLCommandloading);
-            DataTable sqlbaseTable = new DataTable();
-            adapter.Fill(sqlbaseTable);
-            sqlbaseTable.Columns.Add("STT");
-            sqlbaseTable.Columns["STT"].SetOrdinal(0);
-            int ixb = 1;
-            foreach (DataRow rowxa in sqlbaseTable.Rows)
-            {
-                rowxa["STT"] = ixb++;
-            }
-            tablepanel.ItemsSource = sqlbaseTable.DefaultView;
-            sqlbaseTable.Dispose();
-        }
-        public void Connection(string TimerST,string TimerEN,string Machine,string Line,string Judge,string Defection,int DataLimit)
-        {
-            try
-            {   
-                string Connec = sqload.DBShow(Machine, Line);
-                connection = new MySqlConnection(Connec); 
-                connection.Open();
-                if (connection.State == System.Data.ConnectionState.Open)
-                {
-                    string sqlselection = newloading.TableDatabaseShow(TimerST, TimerEN, DataLimit, Judge, Defection);
-                    cmd = new MySqlCommand(sqlselection, connection);
-                    //(string Machine , string Limited, string TimerST, string TimerEN)
-                    if (Machine =="Assy_AMI" || Machine == "CP_AOI" || Machine =="LT_AMI")
-                    {
-                        TableAssyAMI(TimerST, TimerEN, Machine,Line);
-                    }
-                    MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                    DataTable sqlbaseTable = new DataTable();
-                    adapter.Fill(sqlbaseTable);
-                    sqlbaseTable.Columns.Add("STT");
-                    sqlbaseTable.Columns["STT"].SetOrdinal(0);
-                    int ixb = 1;   
-                    tabletileld(Machine, DataLimit, TimerST, TimerEN);
-                    foreach (DataRow rowxa in sqlbaseTable.Rows)
-                    {
-                        rowxa["STT"] = ixb++;
-                    }
-                    Caculator(sqlbaseTable);
-                    if (DatashowTable == true)
-                    {
-                        tablebase.ItemsSource = sqlbaseTable.DefaultView;
-                    }
-                    sqlbaseTable.Dispose();
-                }
-                connection.Close();
-                return;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: Step BY1 CONNECTION FAIL " + ex);
-                connection.Close();
-                return;
-            }
-        }
-        private void tabletileld(string Machine ,  int Limited, string TimerST, string TimerEN)
-        {
-            newloading = new NewLoading();
-            //Table dữ liệu tính toán cho CG_AOI
-            string sql = newloading.YRTtable(Machine,TimerST,TimerEN,Limited);
-            MySqlCommand act = new MySqlCommand(sql, connection);
-            MySqlDataAdapter adapter2 = new MySqlDataAdapter(act);
-            DataTable sqltbrateTable = new DataTable();
-            adapter2.Fill(sqltbrateTable);
-            sqltbrateTable.Columns.Add("STT");
-            sqltbrateTable.Columns["STT"].SetOrdinal(0);
-            int ixb = 1;
-            foreach (DataRow rowxa in sqltbrateTable.Rows)
-            {
-                rowxa["STT"] = ixb++;
-            }
-            table2.ItemsSource = sqltbrateTable.DefaultView;
-            sqltbrateTable.Dispose();
-        }
         public void StartSeach(object sender, RoutedEventArgs e)
         {
-            sqload = new SQLLoading();
-            newloading = new NewLoading();
-            iP_Class = new IP_Class();
-            cgaoiplus = new CGAOIPlus();
-
-            string Machine = MachineSelection.Text;
-            string Line = LineSelection.Text;
-            int DataLimit = Convert.ToInt32(data_limit_seach.Text);
-            string TimerST = Time_ST.Text;
-            string TimerEN = Time_EN.Text;
-            string Judge = Judgeslection.Text;
-            string Defection = defectselection.Text;
-            if (Machine == string.Empty || Line == string.Empty)
+            if(!loading.IsBusy && !seachdd.IsBusy)
             {
-                MessageBox.Show("No Data LD");
-                return;
-            }
-            CleardatatableGrid();
-            Showwindown();
-            if (Machine != "CG_AOI_Plus")
-            {// public void Connection(string TimerST,string TimerEN,string Machine,string Line,string Judge,string Defection,int DataLimit)
-                Connection(TimerST, TimerEN, Machine,Line,Judge,Defection,DataLimit);
+                seachexport = new SeachDataVol2();
+                CleardatatableGrid();
+                loadingwindown.Visibility = Visibility.Visible;
+                loading.RunWorkerAsync();
             }
             else
             {
-                foreach (string Item in IPMachine_CGPlus)
-                {
-                   
-                    string LaneX = Item.Substring(4, 1);
-                    string LineCGPlus = $"{Line}_{LaneX}";
-                    if (LaneX == "A")
-                    {
-                        DataTable DatataleA = cgaoiplus.Plus_cgaoi(Machine, LineCGPlus, TimerST, TimerEN);
-                        table2.ItemsSource = DatataleA.DefaultView;
-                        DataTable DataORGA = cgaoiplus.Plus_CGA(Machine, LineCGPlus, DataLimit, TimerST,TimerEN,Judge,Defection);
-                        tablebase.ItemsSource = DataORGA.DefaultView;
-                        CaculatorCGPlusA(DataORGA);
-                    }
-                    else if (LaneX == "B")
-                    {
-                        DataTable DatataleB = cgaoiplus.Plus_cgaoiB(Machine, LineCGPlus, TimerST, TimerEN);
-                        TableB.ItemsSource = DatataleB.DefaultView;
-                        DataTable DataORGB = cgaoiplus.Plus_CGB(Machine, LineCGPlus, DataLimit, TimerST, TimerEN, Judge, Defection);
-                        Lane_B_CG.ItemsSource = DataORGB.DefaultView;
-                        CaculatorCGPlusB(DataORGB);
-                        Catital();
-                    }
-                }
+                MessageBox.Show("Is Running");
             }
-            adb.Close();
         }
         private void SeachID(object sender, RoutedEventArgs e)
         {
-            sqload = new SQLLoading();
-            SeachDataCls seachDataCls = new SeachDataCls();
-            DataTable dt = new DataTable();
-            int length = BoxID.Text.Length;
-            string Machine = MachineSelection.Text;
-            string Line = LineSelection.Text;
-            string IDList = BoxID.Text;
-            string connector = sqload.DBShow(Machine, Line);
-            MySqlConnection connection = new MySqlConnection(connector);
-            connection.Open();
-            if (connection.State == System.Data.ConnectionState.Open)
+            if (!loading.IsBusy && !seachdd.IsBusy && MachineSelection.Text != "CG_AOI_Plus")
             {
+                seachexport = new SeachDataVol2();
                 CleardatatableGrid();
-                string loadingdata = seachDataCls.LoadingData(Machine, length, Line, seachpanel, IDList);
-                MySqlCommand cmd = new MySqlCommand(loadingdata, connection);
-                MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                adapter.Fill(dt);
-                dt.Columns.Add("STT");
-                dt.Columns["STT"].SetOrdinal(0);
-                int ixb = 1;
-                foreach (DataRow rowxa in dt.Rows)
-                {
-                    rowxa["STT"] = ixb++;
-                }
-                datatable = dt;
-                tablebase.ItemsSource = dt.DefaultView;
+                loadingwindown.Visibility = Visibility.Visible;
+                seachdd.RunWorkerAsync();
             }
-           
-
+            else
+            {
+                MessageBox.Show("Is Running");
+            }
+            
         }
-        DataTable datatable;
         public void Caculator(DataTable table)
         {
             ClearData();
@@ -613,22 +739,31 @@ namespace Auto_Cls_Data
                 YRTNAB.Content = YRTNA_B.ToString("#.#") + "%";
             }
         }
-        private void Showwindown()
-        {
-            adb = new Window1();
-            adb.Left = 850;
-            adb.Top = 300;
-            adb.Show();
-        }
         private void copydatatoclipboard(object sender, RoutedEventArgs e)
          {
-            if (datatable == null)
-            {
-                return;
-            }
             DataObject dataObject = new DataObject();
-            dataObject.SetData(DataFormats.UnicodeText, GetClipboardText(datatable));
-            Clipboard.SetDataObject(dataObject, true);
+            if (MachineSelection.Text != "CG_AOI_Plus")
+            {
+                if (datatable == null)
+                {
+                    return;
+                }
+                dataObject.SetData(DataFormats.UnicodeText, GetClipboardText(datatable));
+                Clipboard.SetDataObject(dataObject, true);
+            }
+            else
+            {
+                if(CG_PlusA == null || CG_PlusB == null)
+                { return; }
+                
+                StringBuilder clipboardText = new StringBuilder();
+                clipboardText.Append(GetClipboardText(CG_PlusA));
+                clipboardText.Append(GetClipboardText(CG_PlusB));
+                dataObject.SetData(DataFormats.UnicodeText, clipboardText.ToString());
+                Clipboard.SetDataObject(dataObject, true);
+
+
+            }
         }
          private string GetClipboardText(DataTable sqlbaseTable)
          {
@@ -759,10 +894,9 @@ namespace Auto_Cls_Data
             YRTALLNAAB.Content = YRTNA_AB.ToString("#.#") + "%";
         }
         #endregion
-        private Window1 adb;
+        private DataTable datatable;
         public DataTable sqlbaseTable;
         public MySqlConnection connection;
-        private MySqlCommand cmd;
         private List<string> IPMachine_CGPlus = new List<string>();
         #region TableShow and Hide
         private void TableB_SelectedCellsChanged_1(object sender, SelectedCellsChangedEventArgs e)
@@ -772,7 +906,6 @@ namespace Auto_Cls_Data
             string LineSelec = $"{Line}_{A}";
             string TimerST = Time_ST.Text;
             string TimerEN = Time_EN.Text;
-
             if (TableB.SelectedCells != null && TableB.SelectedCells.Count > 0)
             {
                 DataGridCellInfo cellInfo = TableB.SelectedCells[1];
@@ -803,7 +936,6 @@ namespace Auto_Cls_Data
                         {
                             rowxa["STT"] = ixb++;
                         }
-
                         tabledt.ItemsSource = loadingmapping.DefaultView;
                         //
                     }
@@ -816,7 +948,6 @@ namespace Auto_Cls_Data
                     connection.Close();
                     return;
                 }
-
             }
         }
         private void table2_SelectedCellsChanged_1(object sender, SelectedCellsChangedEventArgs e)
@@ -826,7 +957,6 @@ namespace Auto_Cls_Data
             string CG_Plus_LineSelec = $"{Line}_A";
             string TimerST = Time_ST.Text;
             string TimerEN = Time_EN.Text;
-
             newloading = new NewLoading();
             sqload = new SQLLoading();
             if (table2.SelectedCells != null && table2.SelectedCells.Count > 0)
@@ -884,7 +1014,6 @@ namespace Auto_Cls_Data
             }
            
         }
-
         bool seachpanel = false;
         #region
         private void Judgeslection_DropDownClosed(object sender, EventArgs e)
@@ -926,117 +1055,79 @@ namespace Auto_Cls_Data
         private void Defectloading()
         {
             ///Defect được yêu cầu loading và tên line
-            if (MachineSelection.Text == "IS_AOI")
+            ///
+            string Machineselec = MachineSelection.Text;
+            LineSelection.Items.Clear();
+            defectselection.Items.Clear();
+            Judgeslection.Items.Add("ALL");
+            defectselection.Items.Add("ALL");
+            switch (Machineselec)
             {
-                LineSelection.Items.Clear();
-                defectselection.Items.Clear();
-                Judgeslection.Items.Add("ALL");
-                Judgeslection.Items.Add("OK");
-                Judgeslection.Items.Add("NG");
 
-                string file_ISAOI_X = "config/ISAOI_Defect.txt";
-                using (StreamReader readerIS = new StreamReader(file_ISAOI_X))
-                {
-                    string lineIS;
-                    while ((lineIS = readerIS.ReadLine()) != null)
+               case "IS_AOI":
+               case "LT_AMI":
+                case "CG_AOI_Plus":
+                case "CG_AOI":
                     {
-                        defectselection.Items.Add(lineIS);
-                    }
-                }
-            }
-            else if (MachineSelection.Text == "CG_AOI")
-            {
-                LineSelection.Items.Clear();
-                defectselection.Items.Clear();
-                Judgeslection.Items.Add("ALL");
-                Judgeslection.Items.Add("OK");
-                Judgeslection.Items.Add("NG");
-                
-                string file_CGAOI = "config/CGAOI_Defect.txt";
-                using (StreamReader readerCG = new StreamReader(file_CGAOI))
-                {
-                    string lineCG;
-                    while ((lineCG = readerCG.ReadLine()) != null)
-                    {
-                        defectselection.Items.Add(lineCG);
-                    }
-                }
-                // Defect CGAOI
-            }
-            else if (MachineSelection.Text == "CP_AOI")
-            {
-                LineSelection.Items.Clear();
-                defectselection.Items.Clear();
-                Judgeslection.Items.Add("ALL");
-                Judgeslection.Items.Add("N");
-                Judgeslection.Items.Add("G");
-                
-                string file_CPAOI = "config/CPAOI_Defect.txt";
-                using (StreamReader readerCP = new StreamReader(file_CPAOI))
-                {
-                    string lineCP;
-                    while ((lineCP = readerCP.ReadLine()) != null)
-                    {
-                        defectselection.Items.Add(lineCP);
-                    }
-                }
-            }
-            else if (MachineSelection.Text == "LT_AMI")
-            {
-                LineSelection.Items.Clear();
-                defectselection.Items.Clear();
-                Judgeslection.Items.Clear();
-                Judgeslection.Items.Add("ALL");
-                Judgeslection.Items.Add("OK");
-                Judgeslection.Items.Add("NG");
-                
-                string file_LT_AMI = "config/LTAMI_Defect.txt";
-                using (StreamReader reader = new StreamReader(file_LT_AMI))
-                {
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        defectselection.Items.Add(line);
-                    }
-                }
-            }
-            else if (MachineSelection.Text == "Assy_AMI")
-            {
-                LineSelection.Items.Clear();
-                defectselection.Items.Clear();
-                Judgeslection.Items.Clear();
-                Judgeslection.Items.Add("ALL");
-                Judgeslection.Items.Add("G");
-                Judgeslection.Items.Add("N");
+                        Judgeslection.Items.Add("OK");
+                        Judgeslection.Items.Add("NG");
 
-                string file_LT_AMI = "config/AssyAMI_Defect.txt";
-                using (StreamReader reader = new StreamReader(file_LT_AMI))
-                {
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        defectselection.Items.Add(line);
+
+                        foreach (var item in ALGOTech.DataAlgorithm)
+                        {
+                            if (Machineselec == item.Machine)
+                            {
+                                foreach (string add in item.Defect)
+                                {
+                                    defectselection.Items.Add(add);
+                                }
+                            }
+                        }
+
+                        /* string file_CGAOI = "config/CGAOI_Defect.txt";
+                         using (StreamReader readerCG = new StreamReader(file_CGAOI))
+                         {
+                             string lineCG;
+                             while ((lineCG = readerCG.ReadLine()) != null)
+                             {
+                                 defectselection.Items.Add(lineCG);
+                             }
+                         }*/
                     }
-                }
-            }
-            else if (MachineSelection.Text == "CG_AOI_Plus")
-            {
-                LineSelection.Items.Clear();
-                defectselection.Items.Clear();
-                Judgeslection.Items.Add("ALL");
-                Judgeslection.Items.Add("OK");
-                Judgeslection.Items.Add("NG");
-                
-                string file_CPAOI = "config/CGAOI_Defect.txt";
-                using (StreamReader readerCP = new StreamReader(file_CPAOI))
-                {
-                    string lineCP;
-                    while ((lineCP = readerCP.ReadLine()) != null)
+                    break;
+                case "Assy_AMI":
+                case "CP_AOI":
                     {
-                        defectselection.Items.Add(lineCP);
+
+                        Judgeslection.Items.Add("N");
+                        Judgeslection.Items.Add("G");
+
+
+                        foreach (var item in ALGOTech.DataAlgorithm)
+                        {
+                            if (Machineselec == item.Machine)
+                            {
+                                foreach (string add in item.Defect)
+                                {
+                                    defectselection.Items.Add(add);
+                                }
+                            }
+                        }
+
+                        /*string file_CPAOI = "config/CPAOI_Defect.txt";
+                        using (StreamReader readerCP = new StreamReader(file_CPAOI))
+                        {
+                            string lineCP;
+                            while ((lineCP = readerCP.ReadLine()) != null)
+                            {
+                                defectselection.Items.Add(lineCP);
+                            }
+                        }*/
                     }
-                }
-            }
+                    break;
+
+            };
+
         }
         private void Line_Sel_DropDownClosed(object sender, EventArgs e)
         {
@@ -1066,10 +1157,10 @@ namespace Auto_Cls_Data
             Mapping_CGAOI.Visibility = Visibility.Collapsed;
             TableB.Visibility = Visibility.Collapsed;
             table2.Visibility = Visibility.Collapsed;
+            Name_laneA.Content = "Table Defect";
             Name_laneB.Visibility = Visibility.Collapsed;
-            Name_laneA.Visibility = Visibility.Collapsed;
             Buttoncopyclipboard.Visibility = Visibility.Visible;
-            Tabletotalpanel.Visibility = Visibility.Collapsed;
+            gridchaneltable.Visibility = Visibility.Collapsed;
 
             //tableIDpanel.Margin = new Thickness(463, 59, 684, 10);
             contentableidpanel.Content = "Table__Defect__ID__Mapping";
@@ -1077,27 +1168,43 @@ namespace Auto_Cls_Data
             // 0,10,10,53
             tablebase.Margin = new Thickness(0, 10, 10, 53);
             Lane_B_CG.Visibility = Visibility.Collapsed;
+            Mapping_CGAOI.Margin = new Thickness(1103, 64, 0, 0);
+            Mapping_CGAOI.Width = 344;
+            string Machineselec = MachineSelection.Text;
             //Table Loading
             CleardatatableGrid();
-            switch (MachineSelection.Text)
+            foreach (var item in ALGOTech.DataAlgorithm)
+            {
+                if (item.Machine == Machineselec)
+                {
+                    foreach (var itemadd in item.DataORG)
+                    {
+                        LineSelection.Items.Add(itemadd.Name);
+                    }
+                }
+            }
+            switch (Machineselec)
             {
                 case "CG_AOI":
-                    {
+                    {//Height="886" Margin="1103,64,0,0" VerticalAlignment="Top" Visibility="Visible" Width="344"
                         table2.Visibility = Visibility.Visible;
                         LaneALTAMI.Content = "Stage 1";
                         LaneBLTAMI.Content = "Stage 2";
                         Connten.Content = "CG__AOI Mapping ";
                         tablebase.Visibility = Visibility.Visible;
                         Mapping_CGAOI.Visibility = Visibility.Visible;
-                        Tabletotalpanel.Margin = new Thickness (463, 59, 550, 10);
-                        Mapping_CGAOI.Margin = new Thickness(1000, 64, 0, 0);
-                        Mapping_CGAOI.Width = 400;
+                        gridchaneltable.Margin = new Thickness (463, 59, 550, 10);
+                        Mapping_CGAOI.Margin = new Thickness(1103, 64, 0, 0);
+                        Mapping_CGAOI.Width = 344;
+                        Seachserialno.Content = "pid";
                         //Mapping_CGAOI.Margin = new Thickness(854, 64, 0, 0);
-                        string[] AddItemLineName = { "303_A", "303_B", "304_A", "304_B", "305_A", "305_B", "306_A", "306_B", "401_A", "401_B", "402_A", "402_B", "403_A", "403_B", "404_A", "404_B", "405_A", "405_B", "501_A", "501_B", "502_A", "502_B", "503_A", "503_B", "504_A", "504_B" };
+
+
+                        /*string[] AddItemLineName = { "303_A", "303_B", "304_A", "304_B", "305_A", "305_B", "306_A", "306_B", "401_A", "401_B", "402_A", "402_B", "403_A", "403_B", "404_A", "404_B", "405_A", "405_B", "501_A", "501_B", "502_A", "502_B", "503_A", "503_B", "504_A", "504_B" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
                             LineSelection.Items.Add($"{Item}");
-                        }
+                        }*/
 
                     }
                     break;
@@ -1106,14 +1213,17 @@ namespace Auto_Cls_Data
                         tablebase.Visibility = Visibility.Visible;
                         Mapping_CGAOI.Visibility = Visibility.Visible;
                         table2.Visibility = Visibility.Visible;
-                        Tabletotalpanel.Visibility = Visibility.Visible;
-                        Tabletotalpanel.Margin = new Thickness(440, 59, 500, 10);
-                        
-                        string[] AddItemLineName = { "301", "302", "303", "304", "305", "306", "404", "406", "501", "502", "503", "504", "505", "506" };
+                        gridchaneltable.Visibility = Visibility.Visible;
+                        gridchaneltable.Margin = new Thickness(440, 59, 500, 10);
+                        Seachserialno.Content = "pid";
+
+                        //
+                        //
+                        /*string[] AddItemLineName = { "301", "302", "303", "304", "305", "306", "404", "406", "501", "502", "503", "504", "505", "506" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
                             LineSelection.Items.Add($"{Item}");
-                        }
+                        }*/
                     }
                     break;
                 case "IS_AOI":
@@ -1123,13 +1233,19 @@ namespace Auto_Cls_Data
                         table2.Visibility = Visibility.Visible;
                        
                         tabledt.Visibility = Visibility.Visible;
-                        Tabletotalpanel.Visibility = Visibility.Visible;
-                        Tabletotalpanel.Margin = new Thickness(440, 59, 500, 10);
-                        string[] AddItemLineName = { "301", "302", "303", "304", "305", "306", "402", "404", "405", "406", "501", "502", "503", "504", "505", "506" };
+                        gridchaneltable.Visibility = Visibility.Visible;
+                        Seachserialno.Content = "short_serial_no";
+                        gridchaneltable.Margin = new Thickness(440, 59, 500, 10);
+
+
+                        //
+ 
+                        //
+                        /*string[] AddItemLineName = { "301", "302", "303", "304", "305", "306", "402", "404", "405", "406", "501", "502", "503", "504", "505", "506" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
                             LineSelection.Items.Add($"{Item}");
-                        }
+                        }*/
                     }
                     break;
                 case "LT_AMI":
@@ -1139,13 +1255,16 @@ namespace Auto_Cls_Data
                         Mapping_CGAOI.Visibility = Visibility.Visible;
                         table2.Visibility = Visibility.Visible;
                         tabledt.Visibility = Visibility.Visible;
-                        Tabletotalpanel.Visibility = Visibility.Visible;
-                        Tabletotalpanel.Margin = new Thickness(440, 59, 500, 10);
+                        gridchaneltable.Visibility = Visibility.Visible;
+                        Seachserialno.Content = "idproduct";
+                        gridchaneltable.Margin = new Thickness(440, 59, 500, 10);
+/*
+
                         string[] AddItemLineName = { "406", "501", "502", "503", "504", "505", "506" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
                             LineSelection.Items.Add($"{Item}");
-                        }
+                        }*/
 
                     }
                     break;
@@ -1154,18 +1273,22 @@ namespace Auto_Cls_Data
                         Connten.Content = "Assy__AMI Stage ";
                         tablebase.Visibility = Visibility.Visible;
                         Mapping_CGAOI.Visibility = Visibility.Visible;
-                        Tabletotalpanel.Visibility = Visibility.Visible;
-                        Tabletotalpanel.Margin = new Thickness(440, 59, 500, 10);
-                        Mapping_CGAOI.Margin = new Thickness(1000, 64, 0, 0);
-                        Mapping_CGAOI.Width = 465;
+                        /*Tabletotalpanel.Visibility = Visibility.Visible;
+                        Tabletotalpanel.Margin = new Thickness(440, 59, 500, 10);*/
+                        
+                        Mapping_CGAOI.Margin = new Thickness(1103, 64, 0, 0);
+                        Mapping_CGAOI.Width = 344;
+                        gridchaneltable.Visibility = Visibility.Visible;
                         table2.Visibility = Visibility.Visible;
                         table2.Width = 410;
+                        Seachserialno.Content = "short_serial_no";
                         tabledt.Visibility = Visibility.Visible;
-                        string[] AddItemLineName = { "301" };
+
+                        /*string[] AddItemLineName = { "301" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
                             LineSelection.Items.Add($"{Item}");
-                        }
+                        }*/
                     }
                     break;
                 case "CG_AOI_Plus":
@@ -1178,25 +1301,26 @@ namespace Auto_Cls_Data
                         Lane_B_CG.Visibility = Visibility.Visible;
                         table2.Visibility = Visibility.Visible;
                         table2.Width = 350;
-                        Mapping_CGAOI.Visibility = Visibility.Visible;
                         TableB.Visibility = Visibility.Visible;
                         TableB.Width = 350;
                         TableB.Margin = new Thickness(300, 20, 654, 10);
+
+                        Mapping_CGAOI.Visibility = Visibility.Visible;
                         Mapping_CGAOI.Width = 500;
                         Mapping_CGAOI.Margin = new Thickness(800, 64, 0, 0);
-                        Tabletotalpanel.Visibility = Visibility.Collapsed;
-                        Buttoncopyclipboard.Visibility = Visibility.Collapsed;
+                        Name_laneA.Content = "Lane A";
                         Name_laneB.Visibility = Visibility.Visible;
                         Name_laneA.Visibility = Visibility.Visible;
-                        Buttoncopyclipboard.Visibility = Visibility.Collapsed;
-                        checkerdataintable.IsEnabled = false;
+                        //Buttoncopyclipboard.Visibility = Visibility.Collapsed;
+                       // checkerdataintable.IsEnabled = false;
                         tablebase.Visibility = Visibility.Visible;
                         tablebase.Margin = new Thickness(0, 10, 743, 53);
-                        string[] AddItemLineName = { "303", "304", "305", "306", "401", "402", "403", "404", "405", "501", "502", "503", "504" };
+
+                        /*string[] AddItemLineName = { "303", "304", "305", "306", "401", "402", "403", "404", "405", "501", "502", "503", "504" };
                         foreach (string Item in AddItemLineName.ToArray())
                         {
                             LineSelection.Items.Add($"{Item}");
-                        }
+                        }*/
                     }
                     break;
             }
@@ -1339,18 +1463,8 @@ namespace Auto_Cls_Data
             seachpanel = false;
 
         }
-        bool DatashowTable = false;
         private void checkerdataintable_Checked(object sender, RoutedEventArgs e)
         {
-           
-            if(checkerdataintable.IsChecked == true)
-            {
-                DatashowTable = true;
-            }
-            else
-            {
-                DatashowTable = false;
-            }
         }
         private void CleardatatableGrid()
         {
@@ -1362,8 +1476,11 @@ namespace Auto_Cls_Data
             tabledt.Items.Clear();
             TableB.ItemsSource = null;
             TableB.Items.Clear();
-            tablepanel.ItemsSource = null;
-            tablepanel.Items.Clear();
+            tablechanel.ItemsSource = null;
+            tablechanel.Items.Clear();
+            Lane_B_CG.ItemsSource = null;
+            Lane_B_CG.Items.Clear();
+
 
         }
         private void ClearData()
@@ -1394,8 +1511,25 @@ namespace Auto_Cls_Data
 
         }
         #endregion
+
         #endregion
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            
+            
 
+
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void Window_Closing_1(object sender, CancelEventArgs e)
+        {
+            
+        }
     }
 }

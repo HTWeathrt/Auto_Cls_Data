@@ -41,7 +41,7 @@ namespace Auto_Cls_Data.Data_Cal
                 {
                     if (Defection == "ALL")
                     {
-                        query = "SELECT * FROM product WHERE pt_datetime >= '" + TimerST + "' AND pt_datetime <= '" + TimerEN + "' AND judge =  'NG' LIMIT " + Limited + "";
+                        query = $"SELECT * FROM product WHERE pt_datetime >= '" + TimerST + "' AND pt_datetime <= '" + TimerEN + "' AND judge =  '"+Judge+"' LIMIT " + Limited + "";
                         
                     }
                     else

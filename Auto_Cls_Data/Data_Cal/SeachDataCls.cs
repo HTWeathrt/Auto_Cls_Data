@@ -12,12 +12,11 @@ namespace Auto_Cls_Data.Data_Cal
 {
     public  class SeachDataCls
     {
-        public string LoadingData(string Machine,int lengh, string line,bool SeachMode,string IDList)
+        public string LoadingData(string Machine,int lengh, string line,bool SeachMode,string IDSeachcheck)
         {
-            
-            SQLLoading sqload = new SQLLoading();
-            string query;
+            string query = string.Empty;
             string seach = string.Empty;
+            
             try
             {
                 if (SeachMode)
@@ -26,28 +25,43 @@ namespace Auto_Cls_Data.Data_Cal
                 }
                 else
                 {
-                    seach = "short_serial_no";
-                }
-                if (IDList.IndexOf(' ') > 1 || IDList.IndexOf('\n') < 2)
-                {
-                    // Seach panel ID thiếu hụt
-                    string IDSeach1 = "'" + IDList + "%'";
-                    query = "SELECT * FROM product WHERE " + seach + " LIKE " + IDSeach1;
-
-                }
-                else
-                {
-                    string output = IDList;
-                    if (output.Contains("\r") || output.Contains("\n"))
+                    switch (Machine)
                     {
-                        output = output.Replace("\r", "").Replace("\n", "','");
+                        case "CP_AOI":
+                            {
+                                seach = "pid";
+                            }
+                            break;
+                        case "IS_AOI":
+                            {
+                                seach = "short_serial_no";
+                            }
+                            break;
+                        case "CG_AOI":
+                            {
+                                seach = "pid";
+                            }
+                            break;
+                        case "LT_AMI":
+                            {
+                                seach = "idproduct";
+                            }
+                            break;
+                        case "Assy_AMI":
+                            {
+                                seach = "short_serial_no";
+                            }
+                            break;
                     }
-                    if (output.EndsWith("','"))
-                    {
-                        output = output.Substring(0, output.Length - 3);
-                    }
-                    query = "SELECT * FROM product WHERE " + seach + " IN ('" + output + "')";
                 }
+                string output = IDSeachcheck;
+                List<string> listIDSeach = new List<string>(output.Split('\n'));
+                int ACx = Convert.ToInt32(listIDSeach[0].ToString().Length);
+                string Result = string.Join("','", listIDSeach);
+                Result = Result.Replace("\r", "").Replace("\n", "");
+                Result = Result.Substring(0, Result.Length - 3);
+                
+                query = $"SELECT * FROM product WHERE {seach} IN ('{Result}')";
             }
             catch
             {

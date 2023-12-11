@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Auto_Cls_Data.windownld"
         mc:Ignorable="d"
-        Title="Waiting........" Height="165" Width="265"  Topmost="True" Focusable="False" BorderBrush="#FFD43939" Foreground="#FF080303" Background="#FFECECEC" MinWidth="265" MaxWidth="265" MinHeight="160" MaxHeight="160">
-    <Grid>
-        <ProgressBar HorizontalAlignment="Center" Height="27" VerticalAlignment="Top" Width="265" IsIndeterminate="True" Foreground="#FFB1441B" BorderBrush="#FF05D6BE" Margin="0,60,0,0" />
+        Title="Waiting........" Height="165" Width="265"  Topmost="True" Focusable="False" BorderBrush="#FFD43939" Foreground="#FFA74040" Background="#FFECECEC" MinWidth="265" MaxWidth="265" MinHeight="160" MaxHeight="160">
+    <Grid Background="#FFFBF4F4">
+        <ProgressBar HorizontalAlignment="Center" Height="27" VerticalAlignment="Top" Width="265" IsIndeterminate="True" Foreground="#FF1BA0B1" BorderBrush="#FF05D6BE" Margin="0,60,0,0" Background="#FFE2E2E2" />
         <TextBlock HorizontalAlignment="Left" Height="28" Margin="34,32,0,0" TextWrapping="Wrap" Text="Waiting......." VerticalAlignment="Top" Width="90" FontSize="15"/>
     </Grid>
 </Window>

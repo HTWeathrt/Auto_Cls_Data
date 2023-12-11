@@ -15,13 +15,18 @@ namespace Auto_Cls_Data.Data_Cal
     {    IP_Class ip_class = new IP_Class();
         public string DBShow(string Machine , string Line)
         {
-            
             ip_class.IP_Selx(Machine, Line);
             string ip_selc = ip_class.Ip_in;
             string dataXL = ip_class.Data_Basexx;
             string Loading = "Server=" + ip_selc + "; Database=" + dataXL + "; Port=3306; User = ami; Password = protnc";
-            return Loading;
-
+            if (ip_selc != "1")
+            {
+                return Loading;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

@@ -21,6 +21,20 @@ using System.IO;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using System.ComponentModel;
+using System.Windows.Forms;
+using DataObject = System.Windows.DataObject;
+using Clipboard = System.Windows.Forms.Clipboard;
+using DataFormats = System.Windows.DataFormats;
+using MessageBox = System.Windows.Forms.MessageBox;
+using System.Windows.Shapes;
+//using Label = System.Windows.Forms.Label;
+using Label = System.Windows.Controls.Label;
+using System.Web.UI;
+using Auto_Cls_Data.Gplus;
+using Serilog;
+using Newtonsoft.Json;
+using System.Diagnostics;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace Auto_Cls_Data
 {
@@ -33,15 +47,209 @@ namespace Auto_Cls_Data
         {
             InitializeComponent();
 
+
+            this.Loaded += Grouding;
+            
+        }
+        private void Grouding(object sender , RoutedEventArgs e)
+        {
+            string timestamp = DateTime.Now.ToString("yyyyMMdd");
+            if (!File.Exists(timestamp))
+            {
+                File.Create(timestamp + ".txt");
+            }
+            Log.Logger = new LoggerConfiguration().WriteTo.File($"Log\\{timestamp}.txt").CreateLogger();
+
+            string Filex = "config\\Prefence.json";
+            if (!File.Exists(Filex))
+            {
+                MessageBox.Show("No RecipeFile");
+                return;
+            }
+            string ADB = File.ReadAllText(Filex);
+            ALGOTech = JsonConvert.DeserializeObject<AlgorithmDLL>(ADB);
+            bw = new BackgroundWorker();
+            bw.WorkerReportsProgress = true; // ho tro bao cao tien do
+            bw.WorkerSupportsCancellation = true; // cho phep dung tien trinh             
+            bw.DoWork += bw_DoWork;
+            bw.RunWorkerCompleted += Bw_RunWorkerCompleted;
+        }
+        AlgorithmDLL ALGOTech;
+        BackgroundWorker bw;
+        bool manualtimer = false;
+        private DispatcherTimer TimerAX;
+        private string MachineName;
+        private bool XAML;
+        private void bw_DoWork(object sender , DoWorkEventArgs e)
+        {
+
+            var timerx = new Stopwatch();
+            timerx.Start();
+            SocicalDefect.Clear();
+            AlarmMessenger.Clear();
+            tabledataquex = new List<DataTableQueyy>();
+            string timerST = string.Empty, TimerEN = string.Empty,machineten = string.Empty;
+            string database = string.Empty;
+            float Specseq1 = 0, Specseq2 = 0, Specseq3 = 0;
+            List<string> selc = new List<string>();
+            Dictionary<string, int> labels = new Dictionary<string, int>();
+            Dispatcher.Invoke(() =>
+            {
+                 timerST = timertoday;
+                 TimerEN = EndTime;
+                 selc = selectedItems;
+                 machineten = MachineName;
+                 Specseq1 = SpecSEQ1;
+                 Specseq2=SpecSEQ2 ;
+                 Specseq3=SpecSEQ3 ;
+            });
+            IP_Class iP_Class = new IP_Class();
+            SQLLoading sqlloading = new SQLLoading();
+            Caculator caculator = new Caculator();
+            ADBData adbdata = new ADBData();
+            ///
+            foreach (var Data in ALGOTech.Databasex)
+            {
+                if (machineten == Data.Machine)
+                {
+                    database = Data.Database;
+                }
+            }
+            foreach (string item in selc)
+            {
+                string IP = string.Empty;
+
+                foreach(var Data in ALGOTech.DataAlgorithm )
+                {
+                    if(Data.Machine == machineten)
+                    {
+                        foreach (var xxx in Data.DataORG)
+                        {
+                            if(xxx.Name == item)
+                            {
+                                IP = xxx.IP;
+                            }    
+                        }
+
+                    }    
+                }
+                string Loading = $"Server={IP}; Database={database}; User = ami; Password = protnc";
+              //  string xxxxx = sqlloading.DBShow(machineten, item);
+                if (IP != string.Empty)
+                {
+                    try
+                    {
+                        MySqlConnection connection = new MySqlConnection(Loading);
+                        connection.Open();
+                        if (connection.State == ConnectionState.Open)
+                        {
+                            string query = "SELECT * FROM product WHERE pt_datetime >= '" + TimerEN + "' AND pt_datetime <= '" + timerST + "'";
+                            string sql = "SELECT judge, priority_defect_name, COUNT(*) AS count_defects, ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM product WHERE pt_datetime >= '" + TimerEN + "' AND pt_datetime <= '" + timerST + "'), 2) AS percent_defects FROM product WHERE pt_datetime >= '" + TimerEN + "' AND pt_datetime <= '" + timerST + "' GROUP BY judge, priority_defect_name ORDER BY priority_defect_name LIMIT 40000 ";
+
+                            DataTable SQLDefect = caculator.CGBaseProcess(sql, connection);
+                            DataTable sqlbaseTable = caculator.CGBaseProcess(query, connection);
+                            tabledataquex.Add(new DataTableQueyy(sqlbaseTable, SQLDefect, item));
+                            //DatabaseinTable(sqlbaseTable);
+                            //SQLDefect_Dow(SQLDefect);
+                            // adapter.Fill(sqlbaseTable);
+                            adbdata.MNT_CP_IS(sqlbaseTable, machineten, item, Specseq1, Specseq2, Specseq3);
+                            int total = adbdata.totalALL;
+                            int ttok = adbdata.totalOK;
+                            int ttng = adbdata.totalNG;
+                            int ttna = adbdata.totalNA;
+
+
+
+
+
+                            string Locat = adbdata.XABV;
+
+                            //AlarmMessenger.Add(Locat);
+                            labels[$"ALL{item}"] = total;
+                            labels[$"OK{item}"] = ttok;
+                            labels[$"NG{item}"] = ttng;
+                            labels[$"NA{item}"] = ttna;
+
+                            string XABV = LoaDataQueryALLstep(SQLDefect,item);
+                            //List<string> Listxx = adbdata.;
+                            Dispatcher.Invoke(() =>
+                            {
+                                // Tải dữ liệu vào Heap
+                                Alarm_messenger.Text = Locat;
+                                    outputdefec.Text = XABV;
+                                    LineData_Defect.Items.Add(item);
+                                    lineorgdata.Items.Add(item);
+                                    linedatacopyselect.Items.Add(item);
+                                    foreach (KeyValuePair<string, int> pair in labels)
+                                    {
+                                        Label label = FindLabel(pair.Key);
+                                        label.Content = pair.Value.ToString();
+                                        if (pair.Key.ToString() == "ALL" + item + "" && pair.Value != 0)
+                                        {//green
+                                                label.Background = new SolidColorBrush(Color.FromRgb(162, 185, 162));
+                                        }
+                                        else if(pair.Key.ToString() == "ALL" + item + "")
+                                        {
+                                          // red
+                                           label.Background = new SolidColorBrush(Color.FromRgb(200, 103, 103));
+                                        }
+                                    }
+                            });
+                            SQLDefect.Dispose();
+                            sqlbaseTable.Dispose();
+                        }
+                        connection.Close();
+                    }
+                    catch(Exception ex)
+                    {
+                        MessageBox.Show($"Error Connected Line{item}");
+                        Log.Error("Err"+ex);
+                    }
+                }
+                else
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        labels[$"ALL{item}"] = 0;
+                        foreach (KeyValuePair<string, int> pair in labels)
+                        {
+                            Label label = FindLabel(pair.Key);
+                            if (pair.Key.ToString() == "ALL" + item + "")
+                            {
+                                label.Background = new SolidColorBrush(Color.FromRgb(200, 103, 103));
+                                
+                            }
+                            // label.Background = new SolidColorBrush(Color.FromRgb(162,185,162));
+                        }
+                    });
+                }
+            }
+            timerx.Stop();
+            
+            TimeSpan timecopy = timerx.Elapsed;
+            string XACL = "Tact time : " + timecopy.ToString(@"m\:ss\.fff");
+            Dispatcher.Invoke(() =>
+            {
+                labeltactime.Content = XACL;
+            });
+            timerx.Restart();
+            selc.Clear();
+        }
+        
+        private void Bw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            //SQLDefect_Dow();
+            loadingwindown.Visibility = Visibility.Collapsed;
         }
         private void Timer_Tick(object sender, EventArgs e)
         {
-            WindownOpen();
-            Stepbystop();
-            Thread.Sleep(1000);
-           
+           // WindownOpen();
+           if(bw.IsBusy != true)
+            {
+                Stepbystop();
+            }   
         }
-        private DispatcherTimer TimerAX;
+
         private void ACKTimerL(int Timer)
         {
             TimerAX = new DispatcherTimer();
@@ -56,22 +264,115 @@ namespace Auto_Cls_Data
         {
            
         }
-        //bool checkbox = true;
-   //     private static Timer timer;
-        private void LoaDataQueryALLstep()
+        List<string> SocicalDefect = new List<string>();
+        List<string> AlarmMessenger = new List<string>();
+        private string LoaDataQueryALLstep(DataTable table , string item)
         {
-           
+                    List<string> Name_Defect = new List<string>();
+                    List<string> Name_DefectNG = new List<string>();
+                    List<int> TotalOK = new List<int>();
+                    List<int> TotalNG = new List<int>();
+                    List<int> TotalNA = new List<int>();
+                    Name_DefectNG.Clear();
+                    Name_Defect.Clear();
+                    int totalALL = table.Rows.Count;
+                    if (totalALL > 0)
+                    {
+                        foreach (DataRow row in table.Rows)
+                        {
+                            string Name;
+                            string Total;
+                            string YRT;
+                            Name = row["priority_defect_name"].ToString();
+                            string jugde = row["judge"].ToString();
+                            if (jugde == "G" || jugde == "OK")
+                            {
+                                Total = row["count_defects"].ToString();
+                                YRT = row["percent_defects"].ToString();
+                                if (Name != string.Empty && Name != "N/A")
+                                {
+                                    Name_Defect.Add("-" + Name + " ⥎ " + Total + "ea ⥎ " + YRT + "%");
+                                }
+                                TotalOK.Add(Convert.ToInt32(Total));
+                            }
+                            else if (jugde == "N" || jugde == "NG")
+                            {
+                                //Name = row["priority_defect_name"].ToString();
+                                Total = row["count_defects"].ToString();
+                                YRT = row["percent_defects"].ToString();
+                                Name_DefectNG.Add(" -" + Name + " ⥎ " + Total + "ea ⥎ " + YRT + "%");
+                                TotalNG.Add(Convert.ToInt32(Total));
+                            }
+                            else
+                            {
+                                Total = row["count_defects"].ToString();
+                                TotalNA.Add(Convert.ToInt32(Total));
+                            }
+                        }
+                        int Sum = TotalOK.Sum();
+                        int SumNG = TotalNG.Sum();
+                        int Total_NA = TotalNA.Sum();
+                        int SumALL = Sum + SumNG;
+                        //
+                        float SumX = float.Parse(Sum.ToString());
+                        float SumNGX = float.Parse(SumNG.ToString());
+                        float SumALLX = float.Parse(SumALL.ToString());
+                        float SUMNA = float.Parse(Total_NA.ToString());
+                        //
+                        SocicalDefect.Add("•Line: " + item);
+                        SocicalDefect.Add("Total: " + SumALL + "ea");
+                        //
+                        if (Sum > 0)
+                        {
+                            float SUMALYRT = (SumX / SumALLX) * 100;
+                            float SUMOK = float.Parse(SUMALYRT.ToString("#.#"));
+                            SocicalDefect.Add("OK : " + Sum + "ea ⥎ " + SUMOK + "%");
+                        }
+                        else
+                        {
+                            SocicalDefect.Add("OK : " + Sum + "ea ⥎ 0%");
+                        }
+                        //
+                        foreach (string name in Name_Defect)
+                        {
+                            SocicalDefect.Add(name);
+                        }
+                        if (SumNG > 0)
+                        {
+                            float SUMNGYR = (SumNGX / SumALLX) * 100;
+                            float SUMNGX = float.Parse(SUMNGYR.ToString("#.#"));
+                            SocicalDefect.Add("NG : " + SumNG + "ea ⥎ " + SUMNGX + "% ");
+                        }
+                        else
+                        {
+                            SocicalDefect.Add("NG : " + SumNG + "ea ⥎ 0% ");
+                        }
+                        //
+                        foreach (string name in Name_DefectNG)
+                        {
+                            SocicalDefect.Add(name);
+
+                        }
+                        if (Total_NA > 0)
+                        {
+
+                        }
+                        SocicalDefect.Add(" ");
+                    
+                }
+                string XABV = string.Join(Environment.NewLine, SocicalDefect);
+                return XABV;
         }
         private void StartQuery1step(object sender, RoutedEventArgs e)
         {
             //MessageBox.Show("Are your Start Mode Auto");
-            MessageBoxResult result = MessageBox.Show("You want to use AUTO MODE\n Bạn muốn sử dụng chế độ AUTO MODE ", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            MessageBoxResult result = System.Windows.MessageBox.Show("You want to use AUTO MODE\n Bạn muốn sử dụng chế độ AUTO MODE ", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if(result == MessageBoxResult.Yes)
             {
                 int Second = Convert.ToInt32(ReloadTimer.Text);
                 ACKTimerL(Second);
                 TimerAX.Start();
-                LoaDataQueryALLstep();
+               //s LoaDataQueryALLstep();
                 buttonstart.Visibility = Visibility.Collapsed;
                 buttonstopxa.Visibility = Visibility.Visible;
             }
@@ -81,194 +382,6 @@ namespace Auto_Cls_Data
             }
         }
         //private string iplist;
-        private void RunFor()
-        {
-            XAML = false;
-            TimerStart();
-            string HelloWWW = "Dear Sir\nAbnormal report Algorithm_Tech \nTimer : " + EndTime + " __to__ " + timertoday + "";
-            ErrorADD.Add(HelloWWW);
-            ErrorADD.Add("\n");
-            IP_Class iP_Class = new IP_Class();
-            foreach (string item in selectedItems)
-            {
-                Thread.Sleep(100);
-                //
-                iP_Class.IP_Selx(MachineName, item);
-                //
-                IP_Selection = iP_Class.Ip_in;
-                //
-                Databasexx = iP_Class.Data_Basexx;
-                //
-                if (IP_Selection != "1")
-                {
-                    LineData_Defect.Items.Add(item);
-
-                    numberlinexab = item;
-                    Thread.Sleep(10);
-                    try
-                    {
-                        string connectionadb = "Server=" + IP_Selection + "; Database = " + Databasexx + "; Port=3306; User = ami; Password = protnc; charSet = utf8";
-                        connection = new MySqlConnection(connectionadb);
-                        connection.Open();
-
-                        if (connection.State == ConnectionState.Open)
-                        {
-                            string query = "SELECT * FROM product WHERE pt_datetime >= '" + EndTime + "' AND pt_datetime <= '" + timertoday + "'";
-                            string sql = "SELECT judge, priority_defect_name, COUNT(*) AS count_defects, ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM product WHERE pt_datetime >= '" + EndTime + "' AND pt_datetime <= '" + timertoday + "'), 2) AS percent_defects FROM product WHERE pt_datetime >= '" + EndTime + "' AND pt_datetime <= '" + timertoday + "' GROUP BY judge, priority_defect_name ORDER BY priority_defect_name LIMIT 20000 ";
-                            MySqlCommand Conx = new MySqlCommand(sql, connection);
-                            MySqlCommand cmd = new MySqlCommand(query, connection);
-                            MySqlDataAdapter Adater2 = new MySqlDataAdapter (Conx);
-                            MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                            DataTable sqlbaseTable = new DataTable();
-                            DataTable SQLDefect = new DataTable();
-                            Adater2.Fill(SQLDefect);
-                            adapter.Fill(sqlbaseTable);
-                            DatabaseinTable(sqlbaseTable);
-                            SQLDefect_Dow(SQLDefect);
-
-                            SQLDefect.Dispose();
-                            sqlbaseTable.Dispose();
-                        }
-                        connection.Close();
-
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Err:" + ex);
-                        connection.Close();
-                        
-                    }
-                }
-                //selectedItems.Clear();
-                Thread.Sleep(10);
-            }
-            if(XAML == true)
-            {
-                string AVGX = string.Join(Environment.NewLine, ErrorADD);
-                AlarmTxbox.Text = AVGX;
-            }
-            else
-            {
-                string AVGX = "Nodata";
-                AlarmTxbox.Text = AVGX;
-            }
-            //adb.Close();
-            selectedItems.Clear();
-            string XABV = string.Join(Environment.NewLine, SocicalDefect);
-            outputdefec.Text = XABV;
-            SocicalDefect.Clear();
-            adb.Close();
-        }
-        public static List<string> SocicalDefect = new List<string>();
-        private void SQLDefect_Dow(DataTable tableDataxalm)
-        {
-            List<string> Name_Defect = new List<string>();
-            List<string> Name_DefectNG = new List<string>();
-            List <int > TotalOK = new List<int>();
-            List<int> TotalNG = new List<int>();
-            List<int> TotalNA = new List<int>();
-            Name_DefectNG.Clear();
-            Name_Defect.Clear();
-            
-
-            int totalALL = tableDataxalm.Rows.Count;
-
-            if (totalALL > 0 )
-            {
-               
-                foreach (DataRow row in tableDataxalm.Rows)
-                {
-                    string Name;
-                    string Total;
-                    
-                    string YRT;
-
-                    Name = row["priority_defect_name"].ToString();
-
-                    string jugde = row["judge"].ToString();
-                    if (jugde == "G"|| jugde == "OK")
-                    {
-                        Total = row["count_defects"].ToString();
-                        YRT = row["percent_defects"].ToString();
-                        if (Name != string.Empty && Name !="N/A")
-                        {
-                            Name_Defect.Add("-" + Name + " ⥎ " + Total + "ea ⥎ " + YRT + "%");
-                        }
-                        TotalOK.Add(Convert.ToInt32(Total));
-                    }
-                    else if (jugde == "N" || jugde == "NG")
-                    {
-                        
-                        //Name = row["priority_defect_name"].ToString();
-                        Total = row["count_defects"].ToString();
-                        YRT = row["percent_defects"].ToString();
-                        Name_DefectNG.Add(" -" + Name + " ⥎ " + Total+ "ea ⥎ " + YRT+"%");
-                        TotalNG.Add(Convert.ToInt32(Total));
-                    }
-                    else
-                    {
-                        Total = row["count_defects"].ToString();
-                        TotalNA.Add(Convert.ToInt32(Total));
-                    }
-                }
-                
-                int Sum = TotalOK.Sum();
-                int SumNG = TotalNG.Sum();
-                int Total_NA = TotalNA.Sum();
-                int SumALL = Sum + SumNG;
-                //
-                float SumX = float.Parse(Sum.ToString());
-                float SumNGX = float.Parse(SumNG.ToString());
-                float SumALLX = float.Parse(SumALL.ToString());
-                float SUMNA = float.Parse(Total_NA.ToString());
-                //
-                //
-                
-                //
-
-                //
-                SocicalDefect.Add("•Line: " + numberlinexab);
-                SocicalDefect.Add("Total: " + SumALL+"ea");
-                //
-                if(Sum >0)
-                {
-                    float SUMALYRT = (SumX / SumALLX) * 100;
-                    float SUMOK = float.Parse(SUMALYRT.ToString("#.#"));
-                    SocicalDefect.Add("OK : " + Sum + "ea ⥎ " + SUMOK + "%");
-                }
-                else
-                {
-                    SocicalDefect.Add("OK : " + Sum + "ea ⥎ 0%");
-                }
-                //
-                foreach (string name in Name_Defect)
-                {
-                    SocicalDefect.Add(name);
-                }
-                if (SumNG > 0)
-                {
-                    float SUMNGYR = (SumNGX / SumALLX) * 100;
-                    float SUMNGX = float.Parse(SUMNGYR.ToString("#.#"));
-                    SocicalDefect.Add("NG : " + SumNG + "ea ⥎ " + SUMNGX + "% ");
-                }
-                else
-                {
-                    SocicalDefect.Add("NG : " + SumNG + "ea ⥎ 0% ");
-                }
-                //
-                foreach (string name in Name_DefectNG)
-                {
-                    SocicalDefect.Add(name);
-
-                }
-                if(Total_NA > 0)
-                {
-
-                }
-                SocicalDefect.Add(" ");
-               
-            }
-        }
         private void querysmartAOI()
         {
             Cleardata();
@@ -344,7 +457,8 @@ namespace Auto_Cls_Data
             {
                 selectedItems.Add("506");
             }
-            RunFor();
+            TimerStart();
+            bw.RunWorkerAsync();
         }
         private void StartQuery1st_1query(object sender, RoutedEventArgs e)
         {
@@ -359,26 +473,20 @@ namespace Auto_Cls_Data
             SpecSEQ2 = float.Parse(SEQ2);
             SpecSEQ3 = float.Parse(SEQ3);
         }
-        private string MachineName;
+
         //private string Linemachine;
         public void Stepbystop()
         {
             LDSpec();
             LineData_Defect.Items.Clear();
+            linedatacopyselect.Items.Clear();
+            lineorgdata.Items.Clear();
             ErrorADD.Clear();
-            if (selectline.Text == "CP_AOI")
+            if (selectline.Text != string.Empty)
             {
-                MachineName = "CP_AOI";
+                MachineName = selectline.Text;
                 querysmartAOI();
-            }
-            else if (selectline.Text == "IS_AOI")
-            {
-                MachineName = "IS_AOI";
-                querysmartAOI();
-            }
-            else if (selectline.Text == string.Empty)
-            {
-                MessageBox.Show("Pls selection Machine");
+                loadingwindown.Visibility = Visibility.Visible;
             }
             else
             {
@@ -389,38 +497,18 @@ namespace Auto_Cls_Data
         {
             if (selectline.Text != string.Empty) 
             {
-                WindownOpen();
+               // WindownOpen();
                 Stepbystop();
+                
             }
             else
             {
                 MessageBox.Show("Select Machine ");
             }    
         }
-        private void WindownOpen()
-        {
-            adb = new Window1();
-            adb.Left = 850;
-            adb.Top = 300;
-            adb.Show();
-        }
-        private void ShowSubForm()
-        {
-            thread5 = new Thread(new ThreadStart(ShowSubForm));
-            thread5.SetApartmentState(ApartmentState.STA);
-            thread5.IsBackground = true;
-            thread5.Start();
-            Window1 adb = new Window1();
-            adb.Left = 850;         
-            adb.Top = 300;
-            adb.Show();
-            System.Windows.Threading.Dispatcher.Run();
 
-        }
-        
         private void DatabaseinTable(DataTable table)
         {
-            
             // Tổng số của Cả bảng;
             int totalALL = table.Rows.Count;
             int totalOK = 0;
@@ -657,23 +745,6 @@ namespace Auto_Cls_Data
                     };
                     break;
             }
-            Thread.Sleep(10);
-
-            int[] TotalBangALL = new int[] { totalALL, totalOK, totalNG, totalNA };
-            int[] TotalTableA = new int[] { totalA_A, totalOK_A, totalNG_A, totalNA_A };
-            int[] TotalTableB = new int[] { totalB_B, totalOK_B, totalNG_B, totalNA_B };
-            int[] TotalNGStage = new int[] { NGA1, NGA2, NGB1, NGB2 };
-            int[] TotalALLStage = new int[] { A1TT, A2TT, B1TT, B2TT };
-
-            Tuktukdata tuktukdata = new Tuktukdata();
-            tuktukdata.TotalALL(TotalBangALL);
-            tuktukdata.TotalTableA(TotalTableA);
-            tuktukdata.TotalTableB(TotalTableB);
-            tuktukdata.TotalNGStage(TotalNGStage);
-            tuktukdata.TotalALLStage(TotalALLStage);
-
-            string AVGX = tuktukdata.ALarm;
-            
 
             float AA_A = float.Parse(totalA_A.ToString());
             float A_NG = float.Parse(totalNG_A.ToString());
@@ -699,7 +770,7 @@ namespace Auto_Cls_Data
 
             float YRTNG_A = (A_NG / AA_A) * 100;
             float YRTNG_B = (B_NG / BB_B) * 100;
-            Thread.Sleep(20);
+            
             switch (numberlinexab)
             {
                 case "301":
@@ -812,9 +883,6 @@ namespace Auto_Cls_Data
                     break;
             }
             bool ON_ALARM = false;
-           
-            
-            
             ///
             if (YRTNG_AB > SpecSEQ1)
             {
@@ -854,85 +922,191 @@ namespace Auto_Cls_Data
             }
             ////
         }
-
-        private bool XAML;
-        private void TimerStart()
+        private Label FindLabel(string name)
         {
-            timertoday = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            ACKTimer = Convert.ToInt32(Timeback.Text);
-            DateTime now = DateTime.Now;
-            TimeSpan hihi = TimeSpan.FromMinutes(ACKTimer);
-            DateTime Result = now.Subtract(hihi);
-            EndTime = Result.ToString("yyyy-MM-dd HH:mm:ss");
+            return (Label)FindName(name);
         }
-        //private string AVGX = string.Join(Environment.NewLine, );
-        // Khai báo private & public
+        private void SQLDefect_Dow()
+        {
+            List<string> SocicalDefect = new List<string>();
+            foreach(var Item in tabledataquex)
+            {
+                List<string> Name_Defect = new List<string>();
+                List<string> Name_DefectNG = new List<string>();
+                List<int> TotalOK = new List<int>();
+                List<int> TotalNG = new List<int>();
+                List<int> TotalNA = new List<int>();
+                Name_DefectNG.Clear();
+                Name_Defect.Clear();
+                int totalALL = Item.Tableyrtdt.Rows.Count;
+                if (totalALL > 0)
+                {
+                    foreach (DataRow row in Item.Tableyrtdt.Rows)
+                    {
+                        string Name;
+                        string Total;
+                        string YRT;
+                        Name = row["priority_defect_name"].ToString();
+                        string jugde = row["judge"].ToString();
+                        if (jugde == "G" || jugde == "OK")
+                        {
+                            Total = row["count_defects"].ToString();
+                            YRT = row["percent_defects"].ToString();
+                            if (Name != string.Empty && Name != "N/A")
+                            {
+                                Name_Defect.Add("-" + Name + " ⥎ " + Total + "ea ⥎ " + YRT + "%");
+                            }
+                            TotalOK.Add(Convert.ToInt32(Total));
+                        }
+                        else if (jugde == "N" || jugde == "NG")
+                        {
+                            //Name = row["priority_defect_name"].ToString();
+                            Total = row["count_defects"].ToString();
+                            YRT = row["percent_defects"].ToString();
+                            Name_DefectNG.Add(" -" + Name + " ⥎ " + Total + "ea ⥎ " + YRT + "%");
+                            TotalNG.Add(Convert.ToInt32(Total));
+                        }
+                        else
+                        {
+                            Total = row["count_defects"].ToString();
+                            TotalNA.Add(Convert.ToInt32(Total));
+                        }
+                    }
+                    int Sum = TotalOK.Sum();
+                    int SumNG = TotalNG.Sum();
+                    int Total_NA = TotalNA.Sum();
+                    int SumALL = Sum + SumNG;
+                    //
+                    float SumX = float.Parse(Sum.ToString());
+                    float SumNGX = float.Parse(SumNG.ToString());
+                    float SumALLX = float.Parse(SumALL.ToString());
+                    float SUMNA = float.Parse(Total_NA.ToString());
+                    //
+                    SocicalDefect.Add("•Line: " + numberlinexab);
+                    SocicalDefect.Add("Total: " + SumALL + "ea");
+                    //
+                    if (Sum > 0)
+                    {
+                        float SUMALYRT = (SumX / SumALLX) * 100;
+                        float SUMOK = float.Parse(SUMALYRT.ToString("#.#"));
+                        SocicalDefect.Add("OK : " + Sum + "ea ⥎ " + SUMOK + "%");
+                    }
+                    else
+                    {
+                        SocicalDefect.Add("OK : " + Sum + "ea ⥎ 0%");
+                    }
+                    //
+                    foreach (string name in Name_Defect)
+                    {
+                        SocicalDefect.Add(name);
+                    }
+                    if (SumNG > 0)
+                    {
+                        float SUMNGYR = (SumNGX / SumALLX) * 100;
+                        float SUMNGX = float.Parse(SUMNGYR.ToString("#.#"));
+                        SocicalDefect.Add("NG : " + SumNG + "ea ⥎ " + SUMNGX + "% ");
+                    }
+                    else
+                    {
+                        SocicalDefect.Add("NG : " + SumNG + "ea ⥎ 0% ");
+                    }
+                    //
+                    foreach (string name in Name_DefectNG)
+                    {
+                        SocicalDefect.Add(name);
 
+                    }
+                    if (Total_NA > 0)
+                    {
+
+                    }
+                    SocicalDefect.Add(" ");
+                }
+            }
+            string XABV = string.Join(Environment.NewLine, SocicalDefect);
+            outputdefec.Text = XABV;
+        }
+        private void TimerStart()
+        {   
+            if(manualtimer== true)
+            {
+                timertoday = Time_EN.Text;
+                EndTime = Time_ST.Text;
+            }
+            else
+            {
+                timertoday = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                ACKTimer = Convert.ToInt32(Timeback.Text);
+                DateTime now = DateTime.Now;
+                TimeSpan hihi = TimeSpan.FromMinutes(ACKTimer);
+                DateTime Result = now.Subtract(hihi);
+                EndTime = Result.ToString("yyyy-MM-dd HH:mm:ss");
+            }
+            
+        }
+
+        private List<DataTableQueyy> tabledataquex;
         private static List<string> ErrorADD = new List<string>();
         private int ACKTimer;
         private string EndTime;
         private string timertoday;
-        private MySqlConnection connection;
         private string IP_Selection;
         public static List<string> selectedItems = new List<string>();
-        private Window1 adb;
         public int Timerdelayloading;
         private string Databasexx;
-        private Thread thread5;
         float SpecSEQ1;
         float SpecSEQ2;
         float SpecSEQ3;
         private string numberlinexab;
         private void SelectlineDropDown(object sender, EventArgs e)
         {
-            ChangerConten();
+            if (selectline.Text == "IS_AOI")
+            {
+                cp301_checkbox.Content = "IS__301";
+                cp302_checkbox.Content = "IS__302";
+                cp303_checkbox.Content = "IS__303";
+                cp304_checkbox.Content = "IS__304";
+                cp305_checkbox.Content = "IS__305";
+                cp306_checkbox.Content = "IS__306";
+                cp401_checkbox.Content = "IS__401";
+                cp402_checkbox.Content = "IS__402";
+                cp403_checkbox.Content = "IS__403";
+                cp404_checkbox.Content = "IS__404";
+                cp405_checkbox.Content = "IS__405";
+                cp406_checkbox.Content = "IS__406";
+                cp501_checkbox.Content = "IS__501";
+                cp502_checkbox.Content = "IS__502";
+                cp503_checkbox.Content = "IS__503";
+                cp504_checkbox.Content = "IS__504";
+                cp505_checkbox.Content = "IS__505";
+                cp506_checkbox.Content = "IS__506";
+            }
+            if (selectline.Text == "CP_AOI")
+            {
+                cp301_checkbox.Content = "CP__301";
+                cp302_checkbox.Content = "CP__302";
+                cp303_checkbox.Content = "CP__303";
+                cp304_checkbox.Content = "CP__304";
+                cp305_checkbox.Content = "CP__305";
+                cp306_checkbox.Content = "CP__306";
+                cp401_checkbox.Content = "CP__401";
+                cp402_checkbox.Content = "CP__402";
+                cp403_checkbox.Content = "CP__403";
+                cp404_checkbox.Content = "CP__404";
+                cp405_checkbox.Content = "CP__405";
+                cp406_checkbox.Content = "CP__406";
+                cp501_checkbox.Content = "CP__501";
+                cp502_checkbox.Content = "CP__502";
+                cp503_checkbox.Content = "CP__503";
+                cp504_checkbox.Content = "CP__504";
+                cp505_checkbox.Content = "CP__505";
+                cp506_checkbox.Content = "CP__506";
+
+            }
         }
         private void AddData_Defect_Drop(object sender, EventArgs e)
         {
             Griddata.Visibility = Visibility.Visible;
-        }
-        private void clearallselect(object sender, RoutedEventArgs e)
-        {
-            cp301_checkbox.IsChecked = false;
-            cp302_checkbox.IsChecked = false;
-            cp303_checkbox.IsChecked = false;
-            cp304_checkbox.IsChecked = false;
-            cp305_checkbox.IsChecked = false;
-            cp306_checkbox.IsChecked = false;
-            cp401_checkbox.IsChecked = false;
-            cp402_checkbox.IsChecked = false;
-            cp403_checkbox.IsChecked = false;
-            cp404_checkbox.IsChecked = false;
-            cp405_checkbox.IsChecked = false;
-            cp406_checkbox.IsChecked = false;
-            cp501_checkbox.IsChecked = false;
-            cp502_checkbox.IsChecked = false;
-            cp503_checkbox.IsChecked = false;
-            cp504_checkbox.IsChecked = false;
-            cp505_checkbox.IsChecked = false;
-            cp506_checkbox.IsChecked = false;
-        }
-        private void selectall_Checked(object sender, RoutedEventArgs e)
-        {
-            cp301_checkbox.IsChecked = true;
-            cp302_checkbox.IsChecked = true;
-            cp303_checkbox.IsChecked = true;
-            cp304_checkbox.IsChecked = true;
-            cp305_checkbox.IsChecked = true;
-            cp306_checkbox.IsChecked = true;
-            cp401_checkbox.IsChecked = true;
-            cp402_checkbox.IsChecked = true;
-            cp403_checkbox.IsChecked = true;
-            cp404_checkbox.IsChecked = true;
-            cp405_checkbox.IsChecked = true;
-            cp406_checkbox.IsChecked = true;
-            cp501_checkbox.IsChecked = true;
-            cp502_checkbox.IsChecked = true;
-            cp503_checkbox.IsChecked = true;
-            cp504_checkbox.IsChecked = true;
-            cp505_checkbox.IsChecked = true;
-            cp506_checkbox.IsChecked = true;
-
         }
         private void Cleardata()
         {
@@ -1010,111 +1184,295 @@ namespace Auto_Cls_Data
             NG506.Content = zero.ToString();
             NA506.Content = zero.ToString();
 
-        }
-        private void ChangerConten()
-        {
-            // Đổi conten cho checkboxx
-            if (selectline.Text == "IS_AOI")
-            {
-                cp301_checkbox.Content = "IS__301";
-                cp302_checkbox.Content = "IS__302";
-                cp303_checkbox.Content = "IS__303";
-                cp304_checkbox.Content = "IS__304";
-                cp305_checkbox.Content = "IS__305";
-                cp306_checkbox.Content = "IS__306";
-                cp401_checkbox.Content = "IS__401";
-                cp402_checkbox.Content = "IS__402";
-                cp403_checkbox.Content = "IS__403";
-                cp404_checkbox.Content = "IS__404";
-                cp405_checkbox.Content = "IS__405";
-                cp406_checkbox.Content = "IS__406";
-                cp501_checkbox.Content = "IS__501";
-                cp502_checkbox.Content = "IS__502";
-                cp503_checkbox.Content = "IS__503";
-                cp504_checkbox.Content = "IS__504";
-                cp505_checkbox.Content = "IS__505";
-                cp506_checkbox.Content = "IS__506";
-            }
-            if (selectline.Text == "CP_AOI")
-            {
-                cp301_checkbox.Content = "CP__301";
-                cp302_checkbox.Content = "CP__302";
-                cp303_checkbox.Content = "CP__303";
-                cp304_checkbox.Content = "CP__304";
-                cp305_checkbox.Content = "CP__305";
-                cp306_checkbox.Content = "CP__306";
-                cp401_checkbox.Content = "CP__401";
-                cp402_checkbox.Content = "CP__402";
-                cp403_checkbox.Content = "CP__403";
-                cp404_checkbox.Content = "CP__404";
-                cp405_checkbox.Content = "CP__405";
-                cp406_checkbox.Content = "CP__406";
-                cp501_checkbox.Content = "CP__501";
-                cp502_checkbox.Content = "CP__502";
-                cp503_checkbox.Content = "CP__503";
-                cp504_checkbox.Content = "CP__504";
-                cp505_checkbox.Content = "CP__505";
-                cp506_checkbox.Content = "CP__506";
 
-            }
+
+
         }
         private void checkimport(object sender, RoutedEventArgs e)
         {
-            if (LineData_Defect.Text == string.Empty)
+            string line = LineData_Defect.Text;
+            if (line == string.Empty)
             {
                 MessageBox.Show("Không có chọn line");
+                return;
             }
-            else
+            foreach (var Item in tabledataquex)
             {
-                if (selectline.Text == "CP_AOI")
+                if (line == Item.Line1)
                 {
-                    MachineName = "CP_AOI";
-                    querysmartAOI();
+                    DataTable dt = Item.Tableyrtdt;
+                    Datatbdefect.ItemsSource = dt.DefaultView;
                 }
-                else if (selectline.Text == "IS_AOI")
-                {
-                    MachineName = "IS_AOI";
-                    querysmartAOI();
-                }
-                string lineaxc = LineData_Defect.Text;
-                
-                IP_Class iP_Class = new IP_Class();
-                iP_Class.IP_Selx(MachineName , lineaxc);
-                IP_Selection = iP_Class.Ip_in;
-                Databasexx = iP_Class.Data_Basexx;
-
-                if (IP_Selection != "1")
-                {
-                    string connectionadb = "Server=" + IP_Selection + "; Database = " + Databasexx + "; Port=3306; User = ami; Password = protnc; charSet = utf8";
-                    connection = new MySqlConnection(connectionadb);
-                    connection.Open();
-                    if (connection.State == ConnectionState.Open)
-                    {
-                        string sql = "SELECT judge, priority_defect_name, COUNT(*) AS count_defects, ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM product WHERE pt_datetime >= '" + EndTime + "' AND pt_datetime <= '" + timertoday + "'), 2) AS percent_defects FROM product WHERE pt_datetime >= '" + EndTime + "' AND pt_datetime <= '" + timertoday + "' GROUP BY judge, priority_defect_name ORDER BY priority_defect_name ";
-                        MySqlCommand cmd = new MySqlCommand(sql, connection);
-                        MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
-                        DataTable sqlbaseTable = new DataTable();
-                        adapter.Fill(sqlbaseTable);
-                        Datatbdefect.ItemsSource = sqlbaseTable.DefaultView;
-                    }
-                    connection.Close();
-                }
-                else
-                {
-                    MessageBox.Show("Dữ liệu rỗng");
-                }
-                
-            }    
+            }
         }
-
+      
         private void buttonstop(object sender, RoutedEventArgs e)
         {
             TimerAX.Stop();
             buttonstart.Visibility = Visibility.Visible;
             buttonstopxa.Visibility = Visibility.Collapsed;
         }
-
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            DataObject dataObject = new DataObject();
+            StringBuilder clipboardText = new StringBuilder();
+            foreach (var Item in tabledataquex)
+            {
+                DataTable dt = Item.Tabledatax;
+                clipboardText.Append(GetClipboardText(dt));
+            }
+            dataObject.SetData(DataFormats.UnicodeText, clipboardText.ToString());
+            Clipboard.SetDataObject(dataObject, true);
+        }
         
+        private string GetClipboardText(DataTable sqlbaseTable)
+        {
+            StringBuilder sb = new StringBuilder();
+            // Lấy tên các cột
+            IEnumerable<string> columnNames = sqlbaseTable.Columns.Cast<DataColumn>().Select(column => column.ColumnName);
+            sb.AppendLine(string.Join("\t", columnNames));
+            // Lấy giá trị các dòng
+            foreach (DataRow row in sqlbaseTable.Rows)
+            {
+                IEnumerable<string> fields = row.ItemArray.Select(field => field.ToString());
+                sb.AppendLine(string.Join("\t", fields));
+            }
+            return sb.ToString();
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {  string line = linedatacopyselect.Text;
+            if (line != string.Empty)
+            {
+                DataObject dataObject = new DataObject();
+                StringBuilder clipboardText = new StringBuilder();
+                foreach (var Item in tabledataquex)
+                {
+                   if(line == Item.Line1)
+                    {
+                        DataTable dt = Item.Tabledatax;
+                        int rowdt = dt.Rows.Count;
+                        if(rowdt !=1)
+                        {
+                            clipboardText.Append(GetClipboardText(dt));
+                        }    
+                    }    
+                }
+                dataObject.SetData(DataFormats.UnicodeText, clipboardText.ToString());
+                Clipboard.SetDataObject(dataObject, true);
+            }    
+        }
+
+        private void checklinetabledataorg(object sender, RoutedEventArgs e)
+        {
+            string line = lineorgdata.Text;
+            if (line != string.Empty)
+            {
+                foreach (var Item in tabledataquex)
+                {
+                    if (line == Item.Line1)
+                    {
+                        DataTable dt = Item.Tabledatax;
+                        datatableorg.ItemsSource = dt.DefaultView;
+                    }
+                }
+            }
+
+        }
+        private string[] listline;
+        private void ListLine()
+        {
+
+
+
+        }
+        string[] itemline = { "301", "302", "303", "304", "305", "306", "401", "402", "403", "404", "405", "406", "501", "502", "503", "504", "505", "506" };
+
+        #region
+        private void Unchecker_all(object sender, RoutedEventArgs e)
+        {
+            cp301_checkbox.IsChecked = false;
+            cp302_checkbox.IsChecked = false;
+            cp303_checkbox.IsChecked = false;
+            cp304_checkbox.IsChecked = false;
+            cp305_checkbox.IsChecked = false;
+            cp306_checkbox.IsChecked = false;
+            cp401_checkbox.IsChecked = false;
+            cp402_checkbox.IsChecked = false;
+            cp403_checkbox.IsChecked = false;
+            cp404_checkbox.IsChecked = false;
+            cp405_checkbox.IsChecked = false;
+            cp406_checkbox.IsChecked = false;
+            cp501_checkbox.IsChecked = false;
+            cp502_checkbox.IsChecked = false;
+            cp503_checkbox.IsChecked = false;
+            cp504_checkbox.IsChecked = false;
+            cp505_checkbox.IsChecked = false;
+            cp506_checkbox.IsChecked = false;
+
+            Dictionary<string, int> labels = new Dictionary<string, int>();
+            foreach (string itemx in itemline)
+            {
+                labels[$"ALL{itemx}"] = 0;
+                foreach (KeyValuePair<string, int> pair in labels)
+                {
+                    Label label = FindLabel(pair.Key);
+                    if (pair.Key.ToString() == "ALL" + itemx + "")
+                    {
+                        label.Background = null;
+                    }
+                }
+            }    
+        }
+        private void selectall_Checked(object sender, RoutedEventArgs e)
+        {
+            cp301_checkbox.IsChecked = true;
+            cp302_checkbox.IsChecked = true;
+            cp303_checkbox.IsChecked = true;
+            cp304_checkbox.IsChecked = true;
+            cp305_checkbox.IsChecked = true;
+            cp306_checkbox.IsChecked = true;
+            cp401_checkbox.IsChecked = true;
+            cp402_checkbox.IsChecked = true;
+            cp403_checkbox.IsChecked = true;
+            cp404_checkbox.IsChecked = true;
+            cp405_checkbox.IsChecked = true;
+            cp406_checkbox.IsChecked = true;
+            cp501_checkbox.IsChecked = true;
+            cp502_checkbox.IsChecked = true;
+            cp503_checkbox.IsChecked = true;
+            cp504_checkbox.IsChecked = true;
+            cp505_checkbox.IsChecked = true;
+            cp506_checkbox.IsChecked = true;
+
+        }
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Time_ST.Opacity = 0.5;
+            Time_EN.Opacity = 0.5;
+            Timeback.Opacity = 1;
+            manualtimer = false;
+        }
+        private void checkbox_manualtimer(object sender, RoutedEventArgs e)
+        {
+            Time_ST.Opacity = 1;
+            Time_EN.Opacity = 1;
+            Timeback.Opacity = 0.5;
+            manualtimer = true;
+            //
+            Time_EN.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            DateTime now = DateTime.Now;
+            TimeSpan hihi = TimeSpan.FromMinutes(30);
+            DateTime Result = now.Subtract(hihi);
+            Time_ST.Text = Result.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        private void RunFor()
+        {
+            tabledataquex = new List<DataTableQueyy>();
+            XAML = false;
+            TimerStart();
+            string HelloWWW = "Dear Sir\nAbnormal report Algorithm_Tech \nTimer : " + EndTime + " __to__ " + timertoday + ""; ErrorADD.Add(HelloWWW); ErrorADD.Add("\n");
+            IP_Class iP_Class = new IP_Class();
+            SQLLoading sqlloading = new SQLLoading();
+            foreach (string item in selectedItems)
+            {
+                string connectionxx = sqlloading.DBShow(MachineName, item);
+                iP_Class.IP_Selx(MachineName, item);
+                IP_Selection = iP_Class.Ip_in;
+                Databasexx = iP_Class.Data_Basexx;
+                //
+                if (IP_Selection != "1")
+                {
+                    LineData_Defect.Items.Add(item);
+                    linedatacopyselect.Items.Add(item);
+                    lineorgdata.Items.Add(item);
+                    numberlinexab = item;
+
+                    string connectionadb = "Server=" + IP_Selection + "; Database = " + Databasexx + "; Port=3306; User = ami; Password = protnc; charSet = utf8";
+                    try
+                    {
+                        MySqlConnection connection = new MySqlConnection(connectionadb);
+                        connection.Open();
+                        if (connection.State == ConnectionState.Open)
+                        {
+                            string query = "SELECT * FROM product WHERE pt_datetime >= '" + EndTime + "' AND pt_datetime <= '" + timertoday + "'";
+                            string sql = "SELECT judge, priority_defect_name, COUNT(*) AS count_defects, ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM product WHERE pt_datetime >= '" + EndTime + "' AND pt_datetime <= '" + timertoday + "'), 2) AS percent_defects FROM product WHERE pt_datetime >= '" + EndTime + "' AND pt_datetime <= '" + timertoday + "' GROUP BY judge, priority_defect_name ORDER BY priority_defect_name LIMIT 20000 ";
+                            MySqlCommand Conx = new MySqlCommand(sql, connection);
+                            MySqlCommand cmd = new MySqlCommand(query, connection);
+                            MySqlDataAdapter Adater2 = new MySqlDataAdapter(Conx);
+                            MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
+                            DataTable sqlbaseTable = new DataTable();
+                            DataTable SQLDefect = new DataTable();
+                            Adater2.Fill(SQLDefect);
+                            adapter.Fill(sqlbaseTable);
+                            sqlbaseTable.Columns.Add("STT");
+                            sqlbaseTable.Columns["STT"].SetOrdinal(0);
+                            int ixb = 1, ibc = 1;
+                            foreach (DataRow rowxa in sqlbaseTable.Rows)
+                            {
+                                rowxa["STT"] = ixb++;
+                            }
+
+                            SQLDefect.Columns.Add("STT");
+                            SQLDefect.Columns["STT"].SetOrdinal(0);
+                            foreach (DataRow rowxa in SQLDefect.Rows)
+                            {
+                                rowxa["STT"] = ibc++;
+                            }
+                            tabledataquex.Add(new DataTableQueyy(sqlbaseTable, SQLDefect, item));
+                            DatabaseinTable(sqlbaseTable);
+                            // SQLDefect_Dow(SQLDefect);
+                            SQLDefect.Dispose();
+                            sqlbaseTable.Dispose();
+                        }
+                    }
+                    catch
+                    {
+                        MessageBox.Show($"Error Connected Line{item}");
+                    }
+
+
+                }
+                //selectedItems.Clear();
+                Thread.Sleep(10);
+            }
+            if (XAML == true)
+            {
+                string AVGX = string.Join(Environment.NewLine, ErrorADD);
+                //AlarmTxbox.Text = AVGX;
+            }
+            else
+            {
+                string AVGX = "Nodata";
+               // AlarmTxbox.Text = AVGX;
+            }
+            //adb.Close();
+            selectedItems.Clear();
+            /*string XABV = string.Join(Environment.NewLine, SocicalDefect);
+            outputdefec.Text = XABV;
+            SocicalDefect.Clear();
+            adb.Close();*/
+        }
+
+        #endregion
+    }
+
+    public class DataTableQueyy
+    {
+        private DataTable tabledatax;
+        private string  Line;
+        private DataTable tableyrtdt;
+        public DataTableQueyy(DataTable tabledata,DataTable tableyrrt , string linenumber)
+        {
+            this.tabledatax = tabledata;
+            this.Line = linenumber;
+            this.Tableyrtdt = tableyrrt;
+
+        }
+        public DataTable Tabledatax { get => tabledatax; set => tabledatax = value; }
+        public string Line1 { get => Line; set => Line = value; }
+        public DataTable Tableyrtdt { get => tableyrtdt; set => tableyrtdt = value; }
     }
 }
 

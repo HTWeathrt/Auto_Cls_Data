@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         Title="Windown_Clock" Height="450" Width="800">
     <Grid>
-        
+        <Image HorizontalAlignment="Left" Height="425" Margin="0,0,0,0" VerticalAlignment="Top" Width="800" Source="/windownld/giphy.gif"/>
+
     </Grid>
 </Window>

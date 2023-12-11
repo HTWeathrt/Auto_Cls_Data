@@ -1,0 +1,196 @@
+﻿<Window x:Class="Auto_Cls_Data.Gplus.CGAOIProfeat"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Auto_Cls_Data.Gplus"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" xmlns:windownld="clr-namespace:Auto_Cls_Data.windownld" 
+        mc:Ignorable="d"
+        Title="CG_AOI Professtional (PO Assy/Inspection Team 1)" Height="1078.8" Width="1920">
+    <Grid Background="#FF797777">
+        <Grid x:Name="cpistable" HorizontalAlignment="Left" Height="237" Margin="10,19,0,0" VerticalAlignment="Top" Width="1682"  >
+            <Label x:Name="labeltactime" Content="" HorizontalAlignment="Left" Height="32" Margin="1311,185,0,12" Width="321"/>
+            <GroupBox HorizontalAlignment="Center"  Height="241" Header="YRT Data" VerticalAlignment="Top" Width="1662" BorderBrush="#FF65EADA" Margin="0,-14,0,0"/>
+
+            <Label Content="Total" HorizontalAlignment="Left" Height="32" Margin="13,32,0,0" VerticalAlignment="Top" Width="52" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="White"/>
+            <Label Content="OK" HorizontalAlignment="Left" Height="36" Margin="13,80,0,0" VerticalAlignment="Top" Width="52" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="#FFFBFBFB"/>
+            <Label Content="NG" HorizontalAlignment="Left" Height="29" Margin="13,133,0,0" VerticalAlignment="Top" Width="52" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="White"/>
+            <Label Content="N/A" HorizontalAlignment="Left" Height="32" Margin="13,187,0,0" VerticalAlignment="Top" Width="52" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="White"/>
+            <Label x:Name="ALL303" Content="...." HorizontalAlignment="Left" Height="28" Margin="69,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK303" Content="...." HorizontalAlignment="Left" Height="28" Margin="69,84,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG303" Content="...." HorizontalAlignment="Left" Height="29" Margin="69,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA303" Content="...." HorizontalAlignment="Left" Height="28" Margin="69,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL304" Content="...." HorizontalAlignment="Left" Height="28" Margin="139,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK304" Content="...." HorizontalAlignment="Left" Height="28" Margin="139,84,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG304" Content="...." HorizontalAlignment="Left" Height="29" Margin="139,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA304" Content="...." HorizontalAlignment="Left" Height="28" Margin="139,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL305" Content="...." HorizontalAlignment="Left" Height="28" Margin="209,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK305" Content="...." HorizontalAlignment="Left" Height="28" Margin="209,84,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG305" Content="...." HorizontalAlignment="Left" Height="29" Margin="209,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA305" Content="...." HorizontalAlignment="Left" Height="28" Margin="209,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL306" Content="...." HorizontalAlignment="Left" Height="28" Margin="279,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK306" Content="...." HorizontalAlignment="Left" Height="28" Margin="279,84,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG306" Content="...." HorizontalAlignment="Left" Height="29" Margin="279,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA306" Content="...." HorizontalAlignment="Left" Height="28" Margin="279,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL401" Content="...." HorizontalAlignment="Left" Height="28" Margin="349,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK401" Content="...." HorizontalAlignment="Left" Height="28" Margin="349,84,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG401" Content="...." HorizontalAlignment="Left" Height="29" Margin="349,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA401" Content="...." HorizontalAlignment="Left" Height="28" Margin="349,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL402" Content="...." HorizontalAlignment="Left" Height="28" Margin="419,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK402" Content="...." HorizontalAlignment="Left" Height="28" Margin="419,84,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG402" Content="...." HorizontalAlignment="Left" Height="29" Margin="419,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA402" Content="...." HorizontalAlignment="Left" Height="28" Margin="419,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL403" Content="...." HorizontalAlignment="Left" Height="28" Margin="488,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK403" Content="...." HorizontalAlignment="Left" Height="28" Margin="488,84,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG403" Content="...." HorizontalAlignment="Left" Height="29" Margin="488,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA403" Content="...." HorizontalAlignment="Left" Height="28" Margin="488,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL404" Content="...." HorizontalAlignment="Left" Height="28" Margin="558,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK404" Content="...." HorizontalAlignment="Left" Height="28" Margin="557,84,0,0" VerticalAlignment="Top" Width="67" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG404" Content="...." HorizontalAlignment="Left" Height="29" Margin="558,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA404" Content="...." HorizontalAlignment="Left" Height="28" Margin="558,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL405" Content="...." HorizontalAlignment="Left" Height="28" Margin="628,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK405" Content="...." HorizontalAlignment="Left" Height="28" Margin="627,84,0,0" VerticalAlignment="Top" Width="67" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG405" Content="...." HorizontalAlignment="Left" Height="29" Margin="628,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA405" Content="...." HorizontalAlignment="Left" Height="28" Margin="628,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL406" Content="...." HorizontalAlignment="Left" Height="28" Margin="698,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK406" Content="...." HorizontalAlignment="Left" Height="28" Margin="698,84,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG406" Content="...." HorizontalAlignment="Left" Height="29" Margin="698,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA406" Content="...." HorizontalAlignment="Left" Height="28" Margin="698,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL501" Content="...." HorizontalAlignment="Left" Height="28" Margin="768,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK501" Content="...." HorizontalAlignment="Left" Height="28" Margin="767,84,0,0" VerticalAlignment="Top" Width="67" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG501" Content="...." HorizontalAlignment="Left" Height="29" Margin="768,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA501" Content="...." HorizontalAlignment="Left" Height="28" Margin="768,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL502" Content="...." HorizontalAlignment="Left" Height="28" Margin="838,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK502" Content="...." HorizontalAlignment="Left" Height="28" Margin="838,84,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG502" Content="...." HorizontalAlignment="Left" Height="29" Margin="838,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA502" Content="...." HorizontalAlignment="Left" Height="28" Margin="838,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL503" Content="...." HorizontalAlignment="Left" Height="28" Margin="908,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK503" Content="...." HorizontalAlignment="Left" Height="28" Margin="908,84,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA503" Content="...." HorizontalAlignment="Left" Height="28" Margin="908,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="ALL504" Content="...." HorizontalAlignment="Left" Height="28" Margin="978,34,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="OK504" Content="...." HorizontalAlignment="Left" Height="28" Margin="978,84,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NG504" Content="...." HorizontalAlignment="Left" Height="29" Margin="978,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <Label x:Name="NA504" Content="...." HorizontalAlignment="Left" Height="28" Margin="978,182,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+            <CheckBox x:Name="cg303_checkbox" Content="CG__303" HorizontalAlignment="Left" Height="15" Margin="69,6,0,0" VerticalAlignment="Top" Width="65" Foreground="White"/>
+            <CheckBox x:Name="cg304_checkbox" Content="CG__304" HorizontalAlignment="Left" Height="15" Margin="139,6,0,0" VerticalAlignment="Top" Width="65" Foreground="White"/>
+            <CheckBox x:Name="cg305_checkbox" Content="CG__305" HorizontalAlignment="Left" Height="15" Margin="209,6,0,0" VerticalAlignment="Top" Width="65" Foreground="White"/>
+            <CheckBox x:Name="cg306_checkbox" Content="CG__306"  HorizontalAlignment="Left" Height="15" Margin="279,6,0,0" VerticalAlignment="Top" Width="65" RenderTransformOrigin="0.967,0.647" Foreground="White"/>
+            <CheckBox x:Name="cg401_checkbox" Content="CG__401" HorizontalAlignment="Left" Height="15" Margin="349,6,0,0" VerticalAlignment="Top" Width="65" Foreground="White"/>
+            <CheckBox x:Name="cg402_checkbox" Content="CG__402" HorizontalAlignment="Left" Height="15" Margin="419,6,0,0" VerticalAlignment="Top" Width="65" RenderTransformOrigin="0.767,0.736" Foreground="White"/>
+            <CheckBox x:Name="cg403_checkbox" Content="CG__403"  HorizontalAlignment="Left" Height="15" Margin="488,7,0,0" VerticalAlignment="Top" Width="65" Foreground="White"/>
+            <CheckBox x:Name="cg404_checkbox" Content="CG__404" HorizontalAlignment="Left" Height="15" Margin="558,7,0,0" VerticalAlignment="Top" Width="65" Foreground="White"/>
+            <CheckBox x:Name="cg405_checkbox" Content="CG__405" HorizontalAlignment="Left" Height="15" Margin="628,7,0,0" VerticalAlignment="Top" Width="65" Foreground="White"/>
+            <CheckBox x:Name="cg406_checkbox" Content="CG__406" HorizontalAlignment="Left" Height="15" Margin="698,7,0,0" VerticalAlignment="Top" Width="65" Foreground="White"/>
+            <CheckBox x:Name="cg501_checkbox" Content="CG__501"  HorizontalAlignment="Left" Height="15" Margin="768,7,0,0" VerticalAlignment="Top" Width="65" Foreground="White"/>
+            <CheckBox x:Name="cg502_checkbox" Content="CG__502" HorizontalAlignment="Left" Height="15" Margin="838,7,0,0" VerticalAlignment="Top" Width="65" Foreground="White"/>
+            <CheckBox x:Name="cg503_checkbox" Content="CG__503" HorizontalAlignment="Left" Height="15" Margin="908,7,0,0" VerticalAlignment="Top" Width="65" Foreground="White"/>
+            <CheckBox x:Name="cg504_checkbox" Content="CG__504"  HorizontalAlignment="Left" Height="15" Margin="978,7,0,0" VerticalAlignment="Top" Width="65" Foreground="White"/>
+            <CheckBox x:Name="selectall" Content="Select ALL" HorizontalAlignment="Left" Height="15" Margin="1091,9,0,0" VerticalAlignment="Top" Width="77" Checked="selectall_Checked" Foreground="White" Unchecked="selectall_Unchecked"/>
+            <Label x:Name="NG503" Content="...." HorizontalAlignment="Left" Height="29" Margin="908,133,0,0" VerticalAlignment="Top" Width="65" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Foreground="White"/>
+
+        </Grid>
+        <Grid HorizontalAlignment="Left" Height="91" Margin="1329,32,0,0" VerticalAlignment="Top" Width="194">
+            <TextBox x:Name="DRSet" HorizontalAlignment="Left" Height="27" Margin="129,0,0,0" TextWrapping="Wrap" Text="30" VerticalAlignment="Top" Width="47" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            <TextBox x:Name="DRABSet" HorizontalAlignment="Left" Height="27" Margin="129,0,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Center" Width="47" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            <TextBox x:Name="DRStageSet" HorizontalAlignment="Left" Height="27" Margin="129,64,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Width="47" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            <Label Content="Defect_ Rate_ Set" InputScope="Number" HorizontalAlignment="Left" Height="27" VerticalAlignment="Top" Width="103"/>
+            <Label Content="Lane AB_ DR Set" InputScope="Number" HorizontalAlignment="Left" Height="27" VerticalAlignment="Center" Width="103"/>
+            <Label Content="Stage A--A B--B Set" InputScope="Number" HorizontalAlignment="Left" Height="27" Margin="0,64,0,0" VerticalAlignment="Top" Width="124"/>
+            <Label Content="%" HorizontalAlignment="Left" Height="27" Margin="176,64,0,0" VerticalAlignment="Top" Width="36"/>
+            <Label Content="%" HorizontalAlignment="Left" Height="27" Margin="176,0,0,0" VerticalAlignment="Center" Width="21"/>
+            <Label Content="%" HorizontalAlignment="Left" Height="27" Margin="176,0,0,0" VerticalAlignment="Top" Width="21"/>
+
+        </Grid>
+        <TabControl HorizontalAlignment="Left" Height="710" Margin="442,256,0,0" VerticalAlignment="Top" Width="1236">
+            <TabControl.Resources>
+                <Style TargetType="{x:Type TabItem}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type TabItem}">
+                                <Border x:Name="Border" BorderThickness="1,1,1,0" BorderBrush="Gainsboro" CornerRadius="4,4,0,0" Margin="2,10,0,3">
+                                    <ContentPresenter x:Name="ContentSite"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        ContentSource="Header"
+                                        Margin="10,2"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="LightSkyBlue" />
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="False">
+                                        <Setter TargetName="Border" Property="Background" Value="GhostWhite" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.Resources>
+            <TabItem Header="Report_Messenger">
+                <Grid>
+                    <TextBox x:Name="outputdefec" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="442" Height="668" Background="#FFCECDCD"/>
+                    <TextBox x:Name="alarm_messenger" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="513" Height="668" Background="#FFF7D3D3" Margin="717,0,0,0"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Data_Check yrt">
+                <Grid x:Name="Griddata"  >
+                    <ComboBox x:Name="LineData_Defect" HorizontalAlignment="Left"  Width="126" Margin="10,8,0,637"/>
+                    <Button Content="Check" Click="checkimport" Margin="162,8,987,637" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Top" RenderTransformOrigin="-0.049,-0.143" />
+                    <DataGrid x:Name="DatatbdefectA" Margin="0,56,797,10"  />
+                    <Label Content="Data Defect Inspection" FontSize="10"  Margin="288,6,797,637" />
+                    <DataGrid x:Name="DatatbdefectB" Margin="465,56,332,10"  />
+                </Grid>
+            </TabItem>
+            <TabItem Header="Copymode">
+                <Grid>
+                    <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="146" Margin="34,104,0,0" VerticalAlignment="Top" Width="254"/>
+                    <Button Margin="34,53,856,585" Height="30" Content="Copy all data org line to clipboard" Click="copyyalldatatoclipboard"/>
+                    <Button Margin="44,194,1018,448" Content="Copy Line to clipboard" Click="Button_Click_1"/>
+                    <ComboBox x:Name="linedatacopyselect" HorizontalAlignment="Left"  Width="118"  Margin="86,137,0,508"/>
+                    <Label Margin="44,137,1144,508" Content="Line"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Data Org table">
+                <Grid>
+                    <Button Margin="249,18,858,616" Content="Check" Click="checklinetabledataorg"/>
+                    <ComboBox x:Name="lineorgdata" HorizontalAlignment="Left"  Width="128"  Margin="86,29,0,616"/>
+                    <Label Margin="10,17,1178,628" Content="Line"/>
+                    <DataGrid  x:Name="datatableorg" Margin="0,66,0,0"/>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+        <Grid HorizontalAlignment="Left" Height="792" Margin="36,261,0,0" VerticalAlignment="Top" Width="401">
+            <GroupBox HorizontalAlignment="Center"  Height="604" Header="Control" VerticalAlignment="Top" Width="401" BorderBrush="#FF65EADA" Margin="0,10,0,0"/>
+
+            <Button x:Name="buttonstart" Content="START" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="344" Click="startauto" Background="Green" Margin="26,378,0,0"/>
+            <Button x:Name="Hehe" Content="1st  Start" HorizontalAlignment="Left" Margin="26,311,0,0" VerticalAlignment="Top" Height="34" Width="344" Click="Start1step" Background="BlueViolet"/>
+            <TextBox x:Name="Timeback" Text="60" HorizontalAlignment="Left" Height="25" Margin="96,216,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="66" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            <Label Content="Return_Time" HorizontalAlignment="Left" Height="33" Margin="22,210,0,0" VerticalAlignment="Top" Width="79" VerticalContentAlignment="Center"/>
+            <TextBox x:Name="ReloadTimer"  HorizontalAlignment="Left" Height="25" Margin="96,252,0,0" TextWrapping="Wrap" Text="60" VerticalAlignment="Top" Width="66" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            <Label Content="Reload_Timer" HorizontalAlignment="Left" Height="30" Margin="22,250,0,0" VerticalAlignment="Top" Width="79" VerticalContentAlignment="Center"/>
+
+            <Label Content="(Minute)" HorizontalAlignment="Left" Height="29" Margin="160,216,0,0" VerticalAlignment="Top" Width="48" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="10"/>
+            <Label Content="(Second)" HorizontalAlignment="Left" Height="29" Margin="160,250,0,0" VerticalAlignment="Top" Width="48" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="10"/>
+            <Button x:Name="buttonstopxa" Content="STOP" HorizontalAlignment="Left" VerticalAlignment="Top" Height="32" Width="344" Click="buttonstop" Background="#FFCE8D2D" Margin="26,378,0,0" Visibility="Collapsed" />
+            <CheckBox Content="Manual Timer " HorizontalAlignment="Left" Margin="65,88,0,0" VerticalAlignment="Top" Checked="checkbox_manualtimer" Unchecked="CheckBox_Unchecked"/>
+            <xctk:DateTimePicker x:Name="Time_EN" HorizontalAlignment="Left" Height="25" Margin="65,156,0,0" VerticalAlignment="Top" Width="160" FormatString="yyyy-MM-dd HH:mm:ss" TimeFormatString="HH:mm" TimeFormat="Custom" Format="Custom" Opacity="0.5"  BorderBrush="#FFF9F9F9" Background="#FFF3F3F3" Foreground="#FF020202"/>
+            <xctk:DateTimePicker x:Name="Time_ST" HorizontalAlignment="Left" Height="25" Margin="65,116,0,0" VerticalAlignment="Top" Width="160" FormatString="yyyy-MM-dd HH:mm:ss" TimeFormatString="HH:mm" TimeFormat="Custom" Format="Custom" Opacity="0.5" BorderBrush="#FFF9F9F9" Background="#FFF3F3F3" Foreground="#FF020202"/>
+            <Label Content="Time__ST" HorizontalAlignment="Left" Height="33" Margin="0,108,0,0" VerticalAlignment="Top" Width="79" VerticalContentAlignment="Center"/>
+            <Label Content="Time__EN" HorizontalAlignment="Left" Height="33" Margin="0,156,0,0" VerticalAlignment="Top" Width="79" VerticalContentAlignment="Center"/>
+
+
+        </Grid>
+        <Grid x:Name="loadingwindown" Background="#FF3683A4" Margin="648,456,878,468" Visibility="Collapsed">
+            <ProgressBar HorizontalAlignment="Center" Height="27" VerticalAlignment="Top" Width="374" IsIndeterminate="True" Foreground="#FFEF2E0F" BorderBrush="#FF05D6BE" Margin="0,50,0,0" Background="#FFE2E2E2" >
+                <ProgressBar.Effect>
+                    <DropShadowEffect/>
+                </ProgressBar.Effect>
+            </ProgressBar>
+            <TextBlock HorizontalAlignment="Left" Height="28" Margin="38,17,0,0" TextWrapping="Wrap" Text="Waiting......." VerticalAlignment="Top" Width="90" FontSize="15" LineStackingStrategy="BlockLineHeight" Foreground="White"/>
+        </Grid>
+
+
+    </Grid>
+</Window>

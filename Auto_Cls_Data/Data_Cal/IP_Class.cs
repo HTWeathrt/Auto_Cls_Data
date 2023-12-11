@@ -93,9 +93,9 @@ namespace Auto_Cls_Data.Data_Cal
                     case "403_B":
                         ip_in = "10.121.46.157"; break;
                     case "404_A":
-                        ip_in = "10.121.47.177"; break;
+                        ip_in = "10.121.45.179"; break;
                     case "404_B":
-                        ip_in = "10.121.47.179"; break;
+                        ip_in = "10.121.45.181"; break;
                     case "405_A":
                         ip_in = "10.121.46.142"; break;
                     case "405_B":
@@ -138,13 +138,13 @@ namespace Auto_Cls_Data.Data_Cal
                     case "401":
                         ip_in = "1"; break; // chưa có máy
                     case "402":
-                        ip_in = "1"; break; // chưa có máy
+                        ip_in = "10.121.43.172"; break; // chưa có máy
                     case "403":
                         ip_in = "1"; break; // chưa có máy
                     case "404":
                         ip_in = "10.121.8.60"; break;
                     case "405":
-                        ip_in = "1"; break; // chưa có máy
+                        ip_in = "10.121.44.240"; break; // chưa có máy
                     case "406":
                         ip_in = "10.121.8.77"; break;
                     case "501":

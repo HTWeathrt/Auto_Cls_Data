@@ -5,22 +5,23 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Auto_Cls_Data"
         mc:Ignorable="d"
-        Title="Program Ins_Cls --- NY Inspection Algorithm Technology ( PO Assy/Inspection Team 1)" Height="300" Width="700" Icon="logo/lg_logo_icon_170264.png" Topmost="True">
-    <Grid Margin="-4,0,4,-6">
-        <Button ToolTip="Seachdata,YRT  " Content="Seach__Data" HorizontalAlignment="Left" Height="54" Margin="59,194,0,0" VerticalAlignment="Top" Width="224" BorderBrush="#FFB37E7E" Background="#FF87C8C7" FontSize="20" Click="ld_windown_seachdata"/>
-        <Button ToolTip="Auto loading Data -> Send to Messenger , AlgoTech use" Content="Auto__Data__Ins" HorizontalAlignment="Left" Height="54" Margin="437,194,0,0" VerticalAlignment="Top" Width="224" Background="#FFEABBC6" FontSize="20" Click="ld_windown_auto"/>
-        <Image Margin="4,7,406,181" Source="/Logo/Hehe.png"/>
-        <Grid HorizontalAlignment="Left" Height="34" Margin="433,157,0,0" VerticalAlignment="Top" Width="208">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="73*"/>
-                <ColumnDefinition Width="135*"/>
-            </Grid.ColumnDefinitions>
-            <Label Content="Password" HorizontalAlignment="Left" Height="34" VerticalAlignment="Center" Width="59"/>
-            <PasswordBox Grid.ColumnSpan="2" Margin="59,0,0,0" MaxLength="12" x:Name="pw_box" PasswordChar="*" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="16"/>
-
+        Title="Program Ins_Cls --- NY Inspection Algorithm Technology ( PO Assy/Inspection Team 1)" MaxHeight="301" MinHeight="300" MaxWidth="700" MinWidth="699" Icon="logo/lg_logo_icon_170264.png" Topmost="True" WindowStyle="ToolWindow">
+    <Grid Margin="-4,0,4,-6" MinWidth="700" MaxWidth="700" MinHeight="290.04" MaxHeight="290.04">
+        <Grid HorizontalAlignment="Left" Height="133" Margin="55,116,0,0" VerticalAlignment="Top" Width="614">
+            <Button ToolTip="Seachdata,YRT  " Content="Seach__Data" HorizontalAlignment="Left" Height="54" Margin="10,66,0,0" VerticalAlignment="Top" Width="224" BorderBrush="#FFB37E7E" Background="#FF87C8C7" FontSize="20" Click="ld_windown_seachdata"/>
+            <Button ToolTip="Auto loading Data -&gt; Send to Messenger , AlgoTech use" Content="Auto__Data__Ins" HorizontalAlignment="Left" Height="54" Margin="366,66,0,0" VerticalAlignment="Top" Width="248" Background="#FFEABBC6" FontSize="20" Click="ld_windown_auto"/>
+            <Button x:Name="Cls_Thumnail" Content="Cls__Thumbnail__Data" HorizontalAlignment="Left" Height="60" VerticalAlignment="Top" Width="224" Background="#FFC6E8B0" Click="Cls_Thumnail_Click" Visibility="Collapsed"/>
         </Grid>
-        <DockPanel LastChildFill="False" Margin="0,95,0,138" >
-            
-        </DockPanel>
+        <Image Margin="10,-1,400,216" Source="/Logo/Hehe.png"/>
+        <ComboBox x:Name="Machineselection" SelectedValue="{Binding ElementName=comboBoxItem1, Mode=OneWay}" Margin="450,145,101,116" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+            <ComboBoxItem x:Name="comboBoxItem1" Content="MCL/SR - Ink"/>
+            <ComboBoxItem Content="CG_AOI"/>
+        </ComboBox>
+        <Label Content="Machine" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="59" Margin="374,144,0,0"/>
+        <Grid HorizontalAlignment="Left" Height="28" Margin="24,73,0,0" VerticalAlignment="Top" Width="291">
+            <Label x:Name="productkey" Content=".." HorizontalAlignment="Left" Margin="59,0,0,0" VerticalAlignment="Center" Width="229"/>
+            <Label Content="License" HorizontalAlignment="Left" Height="28" VerticalAlignment="Center" Width="59"/>
+        </Grid>
+        <Image HorizontalAlignment="Left" Height="144" Margin="340,0,0,0" VerticalAlignment="Top" Width="365" Source="Logo/Inspection.png"/>
     </Grid>
 </Window>
